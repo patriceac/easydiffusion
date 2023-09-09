@@ -161,7 +161,7 @@ let initImageClearBtn = document.querySelector(".init_image_clear")
 let promptStrengthContainer = document.querySelector("#prompt_strength_container")
 
 let initialText = document.querySelector("#initial-text")
-let supportBanner = document.querySelector("#supportBanner")
+//let supportBanner = document.querySelector("#supportBanner")
 let versionText = document.querySelector("#version")
 let previewTools = document.querySelector("#preview-tools")
 let clearAllPreviewsBtn = document.querySelector("#clear-all-previews")
@@ -1561,16 +1561,16 @@ function updateInitialText() {
         }
         previewTools.classList.add("displayNone")
         initialText.classList.remove("displayNone")
-        supportBanner.classList.add("displayNone")
+        //supportBanner.classList.add("displayNone")
     } else {
         initialText.classList.add("displayNone")
         previewTools.classList.remove("displayNone")
         document.querySelector("div.display-settings").prepend(undoButton)
 
-        const countBeforeBanner = localStorage.getItem("countBeforeBanner") || 1
-        if (countBeforeBanner <= 0) {
-            supportBanner.classList.remove("displayNone")
-        }
+        //const countBeforeBanner = localStorage.getItem("countBeforeBanner") || 1
+        //if (countBeforeBanner <= 0) {
+        //    supportBanner.classList.remove("displayNone")
+        //}
     }
 }
 
@@ -2530,6 +2530,7 @@ window.addEventListener("beforeunload", function(e) {
     }
 })
 
+/*
 document.addEventListener("collapsibleClick", function(e) {
     let header = e.detail
     if (header === document.querySelector("#negative_prompt_handle")) {
@@ -2540,6 +2541,7 @@ document.addEventListener("collapsibleClick", function(e) {
         }
     }
 })
+*/
 
 createCollapsibles()
 prettifyInputs(document)

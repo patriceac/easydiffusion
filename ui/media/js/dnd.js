@@ -501,6 +501,7 @@ function restoreTaskToUI(task, fieldsToSkip) {
     }
     upscaleModelField.disabled = !useUpscalingField.checked
     upscaleAmountField.disabled = !useUpscalingField.checked
+    onFixFaceModelChange()
 
     // hide/show source picture as needed
     if (IMAGE_REGEX.test(initImagePreview.src) && task.reqBody.init_image == undefined) {
