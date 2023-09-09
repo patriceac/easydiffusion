@@ -60,23 +60,8 @@
         <div id="editor">
             <div id="editor-inputs">
                 <div id="editor-inputs-prompt" class="row">
-                    <div id="prompt-toolbar" class="split-toolbar">
-                        <div id="prompt-toolbar-left" class="toolbar-left">
-                            <label for="prompt"><b>Enter Prompt</b>
-                                <i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip right">
-                                    You can type your prompts in the below textbox or load them from a file. You can also
-                                    reload tasks from metadata embedded in PNG, WEBP and JPEG images (enable embedding from the Settings).
-                                </span></i>
-                            </label>
-                            <small>or</small>
-                            <button id="promptsFromFileBtn" class="tertiaryButton smallButton">Load from a file</button>
-                        </div>
-                        <div id="prompt-toolbar-right" class="toolbar-right">
-                            <button id="image-modifier-dropdown" class="tertiaryButton smallButton">+ Image Modifiers</button>
-                            <button id="embeddings-button" class="tertiaryButton smallButton displayNone">+ Embedding</button>
-                        </div>
-                    </div>
-                    <textarea id="prompt" class="col-free">a photograph of an astronaut riding a horse</textarea>
+                    <label for="prompt"><b>Enter Prompt</b></label> <small>or</small> <button id="promptsFromFileBtn" class="tertiaryButton">Load from a file</button>
+                    <textarea id="prompt" class="col-free"></textarea>
                     <input id="prompt_from_file" name="prompt_from_file" type="file" /> <!-- hidden -->
                     <label for="negative_prompt" class="collapsible" id="negative_prompt_handle">
                         Negative Prompt
@@ -481,9 +466,6 @@
                     </div>
                     <div class="clearfix" style="clear: both;"></div>
                 </div>
-                <div id="supportBanner" class="displayNone">
-                    If you found this project useful and want to help keep it alive, please consider <a href="https://ko-fi.com/easydiffusion" target="_blank">buying me a coffee</a> or <a href="https://www.patreon.com/EasyDiffusion" target="_blank">supporting me on Patreon</a> to help cover the cost of development and maintenance! Or even better, <a href="https://cmdr2.itch.io/easydiffusion" target="_blank">donating the actual cost of this software</a>. Thanks for your support!
-                </div>
             </div>
         </div>
         </div>
@@ -678,7 +660,6 @@
             <textarea id="custom-modifiers-input" placeholder="Enter your custom modifiers, one-per-line" spellcheck="false"></textarea>
             <p><small><b>Tip:</b> You can include special characters like {} () [] and |. You can also put multiple comma-separated phrases in a single line, to make a single modifier that combines all of those.</small></p>
         </div>
-        <div id="editor-modifiers-entries" class="collapsible-content"></div>
     </div>
 
     <dialog id="modifier-settings-config">

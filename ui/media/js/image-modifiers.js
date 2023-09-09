@@ -11,8 +11,7 @@ let previewImageField = document.querySelector("#preview-image")
 let modifierSettingsBtn = document.querySelector("#modifier-settings-btn")
 let modifierSettingsOverlay = document.querySelector("#modifier-settings-config")
 let customModifiersTextBox = document.querySelector("#custom-modifiers-input")
-let customModifierEntriesToolbar = document.querySelector("#editor-modifiers-subheader")
-let modifierSettingsCloseBtn = document.querySelector("#modifier-settings-close-button")
+let customModifierEntriesToolbar = document.querySelector("#editor-modifiers-entries-toolbar")
 
 const modifierThumbnailPath = "media/modifier-thumbnails"
 const activeCardClass = "modifier-card-active"
@@ -247,7 +246,7 @@ function refreshInactiveTags(inactiveTags) {
     overlays.forEach((i) => {
         let modifierName = i.parentElement.getElementsByClassName("modifier-card-label")[0].getElementsByTagName("p")[0]
             .dataset.fullName
-        if (inactiveTags?.find((element) => trimModifiers(element) === modifierName) !== undefined) {
+        if (inactiveTags?.find((element) => element === modifierName) !== undefined) {
             i.parentElement.classList.add("modifier-toggle-inactive")
         }
     })
@@ -344,7 +343,7 @@ function changePreviewImages(val) {
                 preview = previews.landscape
             }
 
-            if (preview) {
+            if (preview != null) {
                 previewImage.src = `${modifierThumbnailPath}/${preview}`
                 previewImage.setAttribute("preview-type", val)
             }
@@ -385,13 +384,13 @@ modifierSettingsOverlay.addEventListener("keydown", function(e) {
     switch (e.key) {
         case "Escape": // Escape to cancel
             customModifiersTextBox.value = customModifiersInitialContent // undo the changes
-            modifierSettingsDialog.close()
+            modifierSettingsOverlay.classList.remove("active")
             e.stopPropagation()
             break
         case "Enter":
             if (e.ctrlKey) {
                 // Ctrl+Enter to confirm
-                modifierSettingsDialog.close()
+                modifierSettingsOverlay.classList.remove("active")
                 e.stopPropagation()
                 break
             }

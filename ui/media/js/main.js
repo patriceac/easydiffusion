@@ -1190,7 +1190,7 @@ function createTask(task) {
     })
 
     task.isProcessing = true
-    taskEntry = imagePreviewContent.insertBefore(taskEntry, supportBanner.nextSibling)
+    taskEntry = imagePreviewContent.insertBefore(taskEntry, previewTools.nextSibling)
     htmlTaskMap.set(taskEntry, task)
 
     task.previewPrompt.innerText = task.reqBody.prompt
@@ -2469,39 +2469,6 @@ function updateEmbeddingsList(filter = "") {
             resizeModifierCards(embeddingsCardSizeSelector.value)
         })
 }
-
-function showEmbeddingDialog() {
-    updateEmbeddingsList()
-    embeddingsSearchBox.value = ""
-    embeddingsDialog.showModal()
-}
-
-embeddingsButton.addEventListener("click", () => {
-    positiveEmbeddingText.classList.remove("displayNone")
-    negativeEmbeddingText.classList.add("displayNone")
-    showEmbeddingDialog()
-})
-
-negativeEmbeddingsButton.addEventListener("click", () => {
-    positiveEmbeddingText.classList.add("displayNone")
-    negativeEmbeddingText.classList.remove("displayNone")
-    showEmbeddingDialog()
-})
-
-embeddingsDialogCloseBtn.addEventListener("click", (e) => {
-    embeddingsDialog.close()
-})
-
-embeddingsSearchBox.addEventListener("input", (e) => {
-    updateEmbeddingsList(embeddingsSearchBox.value)
-})
-
-embeddingsCardSizeSelector.addEventListener("change", (e) => {
-    resizeModifierCards(embeddingsCardSizeSelector.value)
-})
-
-modalDialogCloseOnBackdropClick(embeddingsDialog)
-makeDialogDraggable(embeddingsDialog)
 
 const collapseText = "Collapse Categories"
 const expandText = "Expand Categories"

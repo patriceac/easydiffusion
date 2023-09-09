@@ -167,6 +167,10 @@
     transform: scale(0.95);
     box-shadow: 0 5px 16px 5px rgba(0, 0, 0, 0.5);
 }
+#preview-image {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+}
 .modifier-card-active {
     border: 2px solid rgb(179 82 255 / 94%);
     box-shadow: 0 0px 10px 0 rgb(170 0 229 / 58%);
@@ -211,15 +215,13 @@
 }
 #modifier-card-size-slider {
     width: 6em;
-    height: 4pt;
+    margin-bottom: 0.5em;
     vertical-align: middle;
 }
 #modifier-settings-btn {
     float: right;
 }
 #modifier-settings-config textarea {
-    margin-left: 5%;
-    margin-top: 2ex;
     width: 90%;
     height: 150px;
 }
