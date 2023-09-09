@@ -199,6 +199,7 @@ function loadSettings() {
         CURRENTLY_LOADING_SETTINGS = false
         saveSettings()
     }
+    onFixFaceModelChange()
 }
 
 function loadDefaultSettingsSection(section_id) {
