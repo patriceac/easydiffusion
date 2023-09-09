@@ -1960,11 +1960,6 @@ div#enlarge-buttons {
     width: 50pt;
 }
 
-/* hack for fixing Image Modifier Improvements plugin */
-#imageTagPopupContainer {
-    position: absolute;
-}
-
 @media screen and (max-width: 400px) {
     .editor-slider {
         width: 40%;
