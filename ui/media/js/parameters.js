@@ -482,7 +482,7 @@ async function getAppConfig() {
             testDiffusersEnabled = false
         }
         testDiffusers.checked = testDiffusersEnabled
-        document.querySelector("#test_diffusers").checked = testDiffusers.checked // don't break plugins
+        //document.querySelector("#test_diffusers").checked = testDiffusers.checked // don't break plugins
 
         if (config.config_on_startup) {
             if (config.config_on_startup?.use_v3_engine) {

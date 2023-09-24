@@ -985,12 +985,14 @@ function makeImage() {
 
     updateInitialText()
 
-    const countBeforeBanner = localStorage.getItem("countBeforeBanner") || 1
-    if (countBeforeBanner <= 0) {
-        // supportBanner.classList.remove("displayNone")
-    } else {
-        localStorage.setItem("countBeforeBanner", countBeforeBanner - 1)
-    }
+    //const countBeforeBanner = localStorage.getItem("countBeforeBanner") || 1
+    //if (countBeforeBanner <= 0) {
+    //    supportBanner.classList.remove("displayNone")
+    //} else {
+    //    localStorage.setItem("countBeforeBanner", countBeforeBanner - 1)
+    //}
+
+    showToast(getImageCount() + " added to queue", 2000)
 }
 
 /* Hover effect for the init image in the task list */
@@ -1704,20 +1706,19 @@ stopImageBtn.addEventListener("click", (e) => {
 widthField.addEventListener("change", onDimensionChange)
 heightField.addEventListener("change", onDimensionChange)
 
+function getImageCount() {
+    const totalImages = Math.max(parseInt(numOutputsTotalField.value), parseInt(numOutputsParallelField.value)) * getPromptsNumber();
+    if (totalImages >= 10000) {
+        return "10000+ Images";
+    }
+    return totalImages > 1 ? `${totalImages} Images` : "Image";
+}
+
 function renameMakeImageButton() {
-    let totalImages =
-        Math.max(parseInt(numOutputsTotalField.value), parseInt(numOutputsParallelField.value)) * getPromptsNumber()
-    let imageLabel = "Image"
-    if (totalImages > 1) {
-        imageLabel = totalImages + " Images"
-    }
-    if (SD.activeTasks.size == 0) {
-        if (totalImages >= 10000) makeImageBtn.innerText = "Make 10000+ images"
-        else makeImageBtn.innerText = "Make " + imageLabel
-    } else {
-        if (totalImages >= 10000) makeImageBtn.innerText = "Enqueue 10000+ images"
-        else makeImageBtn.innerText = "Enqueue Next " + imageLabel
-    }
+    const imageLabel = getImageCount();
+    const action = SD.activeTasks.size === 0 ? "Make" : "Enqueue Next";
+    
+    makeImageBtn.innerText = `${action} ${imageLabel}`;
 }
 numOutputsTotalField.addEventListener("change", renameMakeImageButton)
 numOutputsTotalField.addEventListener("keyup", debounce(renameMakeImageButton, 300))
