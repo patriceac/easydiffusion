@@ -149,12 +149,21 @@ def make_images(
     context.stop_processing = False
     print_task_info(req, task_data, models_data, output_format, save_data)
 
-    images, seeds = make_images_internal(
+    image_tuples, seeds = make_images_internal(
         context, req, task_data, models_data, output_format, save_data, data_queue, task_temp_images, step_callback
     )
 
+    # Separate actual images and their prompts
+    actual_images = [img for img, _ in image_tuples]
+    prompts = [prompt for _, prompt in image_tuples]
+
     res = GenerateImageResponse(
-        req, task_data, models_data, output_format, save_data, images=construct_response(images, seeds, output_format)
+        req, 
+        task_data, 
+        models_data, 
+        output_format, 
+        save_data, 
+        images=construct_response(actual_images, seeds, prompts, output_format)
     )
     res = res.json()
     data_queue.put(json.dumps(res))
@@ -208,17 +217,24 @@ def make_images_internal(
 
     gc(context)
 
+    # Separate actual images and their prompts
+    actual_images = [img for img, _ in images]
+    prompts = [prompt for _, prompt in images]
+
     filters, filter_params = task_data.filters, task_data.filter_params
-    filtered_images = filter_images(context, images, filters, filter_params) if not user_stopped else images
+    filtered_images = filter_images(context, actual_images, filters, filter_params) if not user_stopped else actual_images
+
+    # Pair the filtered images back with their corresponding prompts
+    filtered_images_with_prompts = list(zip(filtered_images, prompts))
 
     if save_data.save_to_disk_path is not None:
-        save_images_to_disk(images, filtered_images, req, task_data, models_data, output_format, save_data)
+        save_images_to_disk(actual_images, filtered_images, req, task_data, models_data, output_format, save_data)
 
     seeds = [*range(req.seed, req.seed + len(images))]
-    if task_data.show_only_filtered_image or filtered_images is images:
-        return filtered_images, seeds
+    if task_data.show_only_filtered_image or filtered_images is actual_images:
+        return filtered_images_with_prompts, seeds
     else:
-        return images + filtered_images, seeds + seeds
+        return images + filtered_images_with_prompts, seeds + seeds
 
 
 def generate_images_internal(
@@ -297,7 +313,7 @@ def generate_images_internal(
     return images, user_stopped
 
 
-def construct_response(images: list, seeds: list, output_format: OutputFormatData):
+def construct_response(images: list, seeds: list, prompts: list, output_format: OutputFormatData):
     return [
         ResponseImage(
             data=img_to_base64_str(
@@ -307,8 +323,9 @@ def construct_response(images: list, seeds: list, output_format: OutputFormatDat
                 output_format.output_lossless,
             ),
             seed=seed,
+            prompt=prompt
         )
-        for img, seed in zip(images, seeds)
+        for img, seed, prompt in zip(images, seeds, prompts)
     ]
 
 

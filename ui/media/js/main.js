@@ -383,12 +383,13 @@ function showImages(reqBody, res, outputContainer, livePreview) {
     res.output.forEach((result, index) => {
         const imageData = result?.data || result?.path + "?t=" + Date.now(),
             imageSeed = result?.seed,
-            imagePrompt = reqBody.prompt,
+            imagePrompt = result?.prompt,
+            //imagePrompt = reqBody.prompt,
             imageInferenceSteps = reqBody.num_inference_steps,
             imageGuidanceScale = reqBody.guidance_scale,
             imageWidth = reqBody.width,
             imageHeight = reqBody.height
-
+        
         if (!imageData.includes("/")) {
             // res contained no data for the image, stop execution
             setStatus("request", "invalid image", "error")
@@ -442,7 +443,7 @@ function showImages(reqBody, res, outputContainer, livePreview) {
         imageElem.setAttribute("data-guidance", imageGuidanceScale)
 
         imageElem.addEventListener("load", function() {
-            imageItemElem.querySelector(".img_bottom_label").innerText = `${this.naturalWidth} x ${this.naturalHeight}`
+            imageItemElem.querySelector(".img_bottom_label").innerText = `${this.getAttribute("data-prompt")} (${this.naturalWidth} x ${this.naturalHeight})`
         })
 
         const imageInfo = imageItemElem.querySelector(".imgItemInfo")

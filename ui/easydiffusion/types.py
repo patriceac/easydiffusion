@@ -105,17 +105,20 @@ class MergeRequest(BaseModel):
 class Image:
     data: str  # base64
     seed: int
+    prompt: str  # new field for the prompt
     is_nsfw: bool
     path_abs: str = None
 
-    def __init__(self, data, seed):
+    def __init__(self, data, seed, prompt=None):  # added prompt parameter, defaulting to None
         self.data = data
         self.seed = seed
+        self.prompt = prompt  # set the prompt
 
     def json(self):
         return {
             "data": self.data,
             "seed": self.seed,
+            "prompt": self.prompt,  # include prompt in JSON
             "path_abs": self.path_abs,
         }
 
