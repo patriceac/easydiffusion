@@ -1195,7 +1195,18 @@ function createTask(task) {
     taskEntry = imagePreviewContent.insertBefore(taskEntry, previewTools.nextSibling)
     htmlTaskMap.set(taskEntry, task)
 
-    task.previewPrompt.innerText = task.reqBody.prompt
+    // Get the original prompt
+    let originalPrompt = task.reqBody.prompt;
+    
+    // Check if it contains both [ and ]
+    if (originalPrompt.includes('[') && originalPrompt.includes(']')) {
+        // Truncate and add ...
+        task.previewPrompt.innerText = originalPrompt.substring(0, 256) + '...';
+    } else {
+        // Otherwise, just set it as is
+        task.previewPrompt.innerText = originalPrompt;
+    }
+    //task.previewPrompt.innerText = task.reqBody.prompt
     if (task.previewPrompt.innerText.trim() === "") {
         task.previewPrompt.innerHTML = "&nbsp;" // allows the results to be collapsed
     }
@@ -1709,9 +1720,9 @@ heightField.addEventListener("change", onDimensionChange)
 function getImageCount() {
     const totalImages = Math.max(parseInt(numOutputsTotalField.value), parseInt(numOutputsParallelField.value)) * getPromptsNumber();
     if (totalImages >= 10000) {
-        return "10000+ Images";
+        return "10000+ images";
     }
-    return totalImages > 1 ? `${totalImages} Images` : "Image";
+    return totalImages > 1 ? `${totalImages} images` : "Image";
 }
 
 function renameMakeImageButton() {

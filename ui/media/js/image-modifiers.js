@@ -234,11 +234,12 @@ function refreshModifiersState(newTags, inactiveTags) {
 function refreshInactiveTags(inactiveTags) {
     // update inactive tags
     if (inactiveTags !== undefined && inactiveTags.length > 0) {
-        activeTags.forEach((tag) => {
-            if (inactiveTags.find((element) => element === tag.name) !== undefined) {
-                tag.inactive = true
+        activeTags.forEach(tag => {
+            const trimmedTagName = trimModifiers(tag.name);
+            if (inactiveTags.some(element => trimModifiers(element) === trimmedTagName)) {
+                tag.inactive = true;
             }
-        })
+        });
     }
 
     // update cards
@@ -246,8 +247,9 @@ function refreshInactiveTags(inactiveTags) {
     overlays.forEach((i) => {
         let modifierName = i.parentElement.getElementsByClassName("modifier-card-label")[0].getElementsByTagName("p")[0]
             .dataset.fullName
-        if (inactiveTags?.find((element) => element === modifierName) !== undefined) {
-            i.parentElement.classList.add("modifier-toggle-inactive")
+        const trimmedModifierName = trimModifiers(modifierName);
+        if (inactiveTags && inactiveTags.some(element => trimModifiers(element) === trimmedModifierName)) {
+            i.parentElement.classList.add("modifier-toggle-inactive");
         }
     })
 }

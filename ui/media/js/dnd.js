@@ -722,7 +722,7 @@ function dragOverHandler(ev) {
 document.addEventListener("drop", dropHandler)
 document.addEventListener("dragover", dragOverHandler)
 
-const TASK_REQ_NO_EXPORT = ["use_cpu", "save_to_disk_path"]
+const TASK_REQ_NO_EXPORT = ["use_cpu", "save_to_disk_path", "seed"]
 const resetSettings = document.getElementById("reset-image-settings")
 
 function checkReadTextClipboardPermission(result) {
