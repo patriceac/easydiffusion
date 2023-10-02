@@ -396,10 +396,12 @@ function showImages(reqBody, res, outputContainer, livePreview) {
             return
         }
 
-        let imageItemElem = index < imageItemElements.length ? imageItemElements[index] : null
+        let imageItemElem = index < imageItemElements.length ? imageItemElements[index] : null;
         if (!imageItemElem) {
-            imageItemElem = document.createElement("div")
-            imageItemElem.className = "imgItem"
+            imageItemElem = document.createElement("div");
+            imageItemElem.className = "imgItem";
+        
+            const shouldInsertLabel = reqBody.prompt.includes('[') && reqBody.prompt.includes(']');
             imageItemElem.innerHTML = `
                 <div class="imgContainer">
                     <img/>
@@ -413,26 +415,27 @@ function showImages(reqBody, res, outputContainer, livePreview) {
                     <div class="spinner displayNone"><center>${spinnerPacmanHtml}</center><div class="spinnerStatus"></div></div>
                 </div>
             `
-            outputContainer.appendChild(imageItemElem)
-            const imageRemoveBtn = imageItemElem.querySelector(".imgPreviewItemClearBtn")
-            let parentTaskContainer = imageRemoveBtn.closest(".imageTaskContainer")
+        
+            outputContainer.appendChild(imageItemElem);
+            const imageRemoveBtn = imageItemElem.querySelector(".imgPreviewItemClearBtn");
+            let parentTaskContainer = imageRemoveBtn.closest(".imageTaskContainer");
             imageRemoveBtn.addEventListener("click", (e) => {
-                undoableRemove(imageItemElem)
-                let allHidden = true
-                let children = parentTaskContainer.querySelectorAll(".imgItem")
+                undoableRemove(imageItemElem);
+                let allHidden = true;
+                let children = parentTaskContainer.querySelectorAll(".imgItem");
                 for (let x = 0; x < children.length; x++) {
-                    let child = children[x]
+                    let child = children[x];
                     if (child.style.display != "none") {
-                        allHidden = false
+                        allHidden = false;
                     }
                 }
                 if (allHidden === true) {
-                    const req = htmlTaskMap.get(parentTaskContainer)
+                    const req = htmlTaskMap.get(parentTaskContainer);
                     if (!req.isProcessing || req.batchesDone == req.batchCount) {
-                        undoableRemove(parentTaskContainer, true)
+                        undoableRemove(parentTaskContainer, true);
                     }
                 }
-            })
+            });
         }
         const imageElem = imageItemElem.querySelector("img")
         imageElem.src = imageData
@@ -443,7 +446,11 @@ function showImages(reqBody, res, outputContainer, livePreview) {
         imageElem.setAttribute("data-guidance", imageGuidanceScale)
 
         imageElem.addEventListener("load", function() {
-            imageItemElem.querySelector(".img_bottom_label").innerText = `${this.getAttribute("data-prompt")} (${this.naturalWidth} x ${this.naturalHeight})`
+            let imgBottomLabel = imageItemElem.querySelector(".img_bottom_label");
+            if (imgBottomLabel) {
+                //imageItemElem.querySelector(".img_bottom_label").innerText = `${this.getAttribute("data-prompt")} (${this.naturalWidth} x ${this.naturalHeight})`
+                imgBottomLabel.innerText = `${this.getAttribute("data-prompt")}`;
+            }
         })
 
         const imageInfo = imageItemElem.querySelector(".imgItemInfo")
@@ -1200,7 +1207,7 @@ function createTask(task) {
     let originalPrompt = task.reqBody.prompt;
     
     // Check if it contains both [ and ]
-    if (originalPrompt.includes('[') && originalPrompt.includes(']')) {
+    if (originalPrompt.length > 256 && originalPrompt.includes('[') && originalPrompt.includes(']')) {
         // Truncate and add ...
         task.previewPrompt.innerText = originalPrompt.substring(0, 256) + '...';
     } else {

@@ -145,16 +145,16 @@ code {
     opacity: 0;
 }
 .imgContainer .img_bottom_label {
-    opacity: 0;
+    opacity: 0.6;
 }
 .imgPreviewItemClearBtn:hover {
     background: var(--button-hover-background);
 }
 .imgContainer:hover > .imgItemInfo {
-    opacity: 1;
+    opacity: 0.6;
 }
 .imgContainer:hover > .imgPreviewItemClearBtn {
-    opacity: 1;
+    opacity: 0.6;
 }
 .imgContainer:hover > .img_bottom_label {
     opacity: 60%;
