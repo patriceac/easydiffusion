@@ -297,7 +297,8 @@ function toggleCardState(modifierName, makeActive) {
         .querySelector("#editor-modifiers")
         .querySelectorAll(".modifier-card")
         .forEach((card) => {
-            const name = card.querySelector(".modifier-card-label").innerText
+            //const name = card.querySelector(".modifier-card-label").innerText
+            const name = card.querySelector(".modifier-card-label p").dataset.fullName // pick the full modifier name
             if (
                 trimModifiers(modifierName) == trimModifiers(name) ||
                 trimModifiers(modifierName) == "by " + trimModifiers(name)

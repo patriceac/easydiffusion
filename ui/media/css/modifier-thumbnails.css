@@ -153,13 +153,17 @@
     position: absolute;
     z-index: 3;
 }
+/*
 .modifier-card-overlay:hover ~ .modifier-card-container .modifier-card-label.tooltip .tooltip-text {
     visibility: visible;
     opacity: 1;
 }
+*/
+/*
 .modifier-card:hover > .modifier-card-image-container .modifier-card-image-overlay {
     opacity: 1;
 }
+*/
 .modifier-card:hover > .modifier-card-image-container img {
     filter: blur(.1em);
 }
@@ -209,7 +213,7 @@
     border-style: solid;
     border-color: transparent transparent rgb(90 100 177 / 94%) transparent;
 }
-.tooltip:hover .tooltip-text {
+.modifier-category .tooltip:hover .tooltip-text {
     visibility: visible;
     opacity: 1;
 }
