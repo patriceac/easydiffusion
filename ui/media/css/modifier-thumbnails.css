@@ -153,19 +153,25 @@
     position: absolute;
     z-index: 3;
 }
+#editor-modifiers-entries .partially-active-class:not(.modifier-card-active) {
+    border: 2px solid rgb(255 165 0 / 94%);
+    box-shadow: 0 0px 10px 0 rgb(255 140 0 / 58%);
+}
+#editor-inputs-tags-list .missing-tag {
+    border: 2px solid rgb(255 82 82 / 94%);
+    box-shadow: 0 0px 10px 0 rgb(229 0 0 / 58%);
+}
 /*
 .modifier-card-overlay:hover ~ .modifier-card-container .modifier-card-label.tooltip .tooltip-text {
     visibility: visible;
     opacity: 1;
 }
 */
-/*
 .modifier-card:hover > .modifier-card-image-container .modifier-card-image-overlay {
     opacity: 1;
 }
-*/
 .modifier-card:hover > .modifier-card-image-container img {
-    filter: blur(.1em);
+    filter: contrast(0.8) brightness(1.2);
 }
 .modifier-card:active {
     transform: scale(0.95);

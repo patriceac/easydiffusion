@@ -1198,6 +1198,35 @@ function makeDialogDraggable(element) {
     })() )
 }
 
+function levenshteinDistance(s1, s2) {
+    // Handle undefined or null cases
+    if (typeof s1 === 'undefined' || s1 === null || typeof s2 === 'undefined' || s2 === null) {
+        return Infinity;
+    }
+
+    if (s1.length > s2.length) {
+        [s1, s2] = [s2, s1];
+    }
+
+    const distances = [...Array(s1.length + 1).keys()];
+
+    for (let index2 = 0; index2 < s2.length; index2++) {
+        const char2 = s2[index2];
+        let newDistances = [index2 + 1];
+        for (let index1 = 0; index1 < s1.length; index1++) {
+            const char1 = s1[index1];
+            if (char1 === char2) {
+                newDistances.push(distances[index1]);
+            } else {
+                newDistances.push(1 + Math.min(distances[index1], distances[index1 + 1], newDistances[newDistances.length - 1]));
+            }
+        }
+        distances.splice(0, distances.length, ...newDistances);
+    }
+
+    return distances[distances.length - 1];
+}
+
 function logMsg(msg, level, outputMsg) {
     if (outputMsg.hasChildNodes()) {
         outputMsg.appendChild(document.createElement("br"))

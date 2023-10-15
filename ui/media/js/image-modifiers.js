@@ -16,6 +16,7 @@ let customModifierEntriesToolbar = document.querySelector("#editor-modifiers-ent
 const modifierThumbnailPath = "media/modifier-thumbnails"
 const activeCardClass = "modifier-card-active"
 const CUSTOM_MODIFIERS_KEY = "customModifiers"
+const maxLabelLength = 30
 
 function createModifierCard(name, previews, removeBy) {
     const modifierCard = document.createElement("div")
@@ -47,7 +48,6 @@ function createModifierCard(name, previews, removeBy) {
         image.remove()
     }
 
-    const maxLabelLength = 30
     const cardLabel = removeBy ? name.replace("by ", "") : name
 
     if (cardLabel.length <= maxLabelLength) {
@@ -96,9 +96,11 @@ function createModifierGroup(modifierGroup, initiallyExpanded, removeBy) {
             const trimmedName = trimModifiers(modifierName)
 
             modifierCard.addEventListener("click", () => {
-                if (activeTags.map((x) => trimModifiers(x.name)).includes(trimmedName)) {
+                //if (activeTags.map((x) => trimModifiers(x.name)).includes(trimmedName)) {
+                if (activeTags.map((x) => trimModifiers(x.originElement.querySelector(".modifier-card-label p").dataset.fullName)).includes(trimmedName)) {
                     // remove modifier from active array
-                    activeTags = activeTags.filter((x) => trimModifiers(x.name) != trimmedName)
+                    //activeTags = activeTags.filter((x) => trimModifiers(x.name) != trimmedName)
+                    activeTags = activeTags.filter((x) => trimModifiers(x.originElement.querySelector(".modifier-card-label p").dataset.fullName) != trimmedName)
                     toggleCardState(trimmedName, false)
                 } else {
                     // add modifier to active array
@@ -158,7 +160,7 @@ async function loadModifiers() {
         console.error("error fetching modifiers", e)
     }
 
-    loadCustomModifiers()
+    //loadCustomModifiers()
     resizeModifierCards(modifierCardSizeSlider.value)
     document.dispatchEvent(new Event("loadImageModifiers"))
 }
@@ -179,6 +181,8 @@ function refreshModifiersState(newTags, inactiveTags) {
 
     // set new modifiers
     newTags.forEach((tag) => {
+        let closestModifier = null;
+        let minDistance = Infinity;
         let found = false
         document
             .querySelector("#editor-modifiers")
@@ -186,6 +190,14 @@ function refreshModifiersState(newTags, inactiveTags) {
             .forEach((modifierCard) => {
                 const modifierName = modifierCard.querySelector(".modifier-card-label p").dataset.fullName
                 const shortModifierName = modifierCard.querySelector(".modifier-card-label p").innerText
+
+                // calculate the Levenshtein distance
+                let distance = levenshteinDistance(trimModifiers(tag), trimModifiers(modifierName));
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closestModifier = modifierCard;
+                }
+                
                 if (trimModifiers(tag) == trimModifiers(modifierName)) {
                     // add modifier to active array
                     if (!activeTags.map((x) => x.name).includes(tag)) {
@@ -206,26 +218,43 @@ function refreshModifiersState(newTags, inactiveTags) {
                     found = true
                 }
             })
+        
         if (found == false) {
-            // custom tag went missing, create one here
-            let modifierCard = createModifierCard(tag, undefined, false) // create a modifier card for the missing tag, no image
-
-            modifierCard.addEventListener("click", () => {
-                if (activeTags.map((x) => x.name).includes(tag)) {
-                    // remove modifier from active array
-                    activeTags = activeTags.filter((x) => x.name != tag)
-                    modifierCard.classList.remove(activeCardClass)
-
-                    modifierCard.querySelector(".modifier-card-image-overlay").innerText = "+"
-                }
-                refreshTagsList()
-            })
-
-            activeTags.push({
-                name: tag,
-                element: modifierCard,
-                originElement: undefined, // no origin element for missing tags
-            })
+            if (closestModifier) {
+                let shortTag = ""
+                const imageModifierCard = closestModifier.cloneNode(true);
+                const shortModifierName = closestModifier.querySelector(".modifier-card-label p").innerText;
+                imageModifierCard.querySelector(".modifier-card-label p").innerText = tag.replace(trimModifiers(tag), shortModifierName);
+                
+                activeTags.push({
+                    name: tag,
+                    element: imageModifierCard,
+                    originElement: closestModifier,
+                    missing: true,
+                });
+                
+                closestModifier.classList.add("partially-active-class");
+                closestModifier.querySelector(".modifier-card-image-overlay").innerText = "-";
+            } else {
+                // custom tag went missing, create one here
+                let modifierCard = createModifierCard(tag, undefined, false); // create a modifier card for the missing tag, no image
+                
+                modifierCard.addEventListener("click", () => {
+                    if (activeTags.map((x) => x.name).includes(tag)) {
+                        // remove modifier from active array
+                        activeTags = activeTags.filter((x) => x.name != tag);
+                        modifierCard.classList.remove(activeCardClass);
+                        modifierCard.querySelector(".modifier-card-image-overlay").innerText = "+";
+                    }
+                    refreshTagsList();
+                });
+        
+                activeTags.push({
+                    name: tag,
+                    element: modifierCard,
+                    originElement: undefined, // no origin element for missing tags
+                });
+            }
         }
     })
     refreshTagsList(inactiveTags)
@@ -268,6 +297,11 @@ function refreshTagsList(inactiveTags) {
         tag.element.querySelector(".modifier-card-image-overlay").innerText = "-"
         tag.element.classList.add("modifier-card-tiny")
 
+        // Check if the tag was marked as missing and add the missingTag class
+        if (tag.missing) {
+            tag.element.classList.add("missing-tag");
+        }
+        
         editorModifierTagsList.appendChild(tag.element)
 
         tag.element.addEventListener("click", () => {
@@ -276,7 +310,8 @@ function refreshTagsList(inactiveTags) {
             })
 
             if (idx !== -1) {
-                toggleCardState(activeTags[idx].name, false)
+                //toggleCardState(activeTags[idx].name, false)
+                toggleCardState(activeTags[idx].originElement.querySelector(".modifier-card-label p").dataset.fullName, false)
 
                 activeTags.splice(idx, 1)
                 refreshTagsList()
@@ -297,7 +332,6 @@ function toggleCardState(modifierName, makeActive) {
         .querySelector("#editor-modifiers")
         .querySelectorAll(".modifier-card")
         .forEach((card) => {
-            //const name = card.querySelector(".modifier-card-label").innerText
             const name = card.querySelector(".modifier-card-label p").dataset.fullName // pick the full modifier name
             if (
                 trimModifiers(modifierName) == trimModifiers(name) ||
@@ -308,6 +342,7 @@ function toggleCardState(modifierName, makeActive) {
                     card.querySelector(".modifier-card-image-overlay").innerText = "-"
                 } else {
                     card.classList.remove(activeCardClass)
+                    card.classList.remove("partially-active-class")
                     card.querySelector(".modifier-card-image-overlay").innerText = "+"
                 }
             }

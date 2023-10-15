@@ -133,6 +133,7 @@ const imageModal = (function() {
     }
 
     const close = () => {
+        setCursorVisibility(true)
         clear()
         modalElem.classList.remove("active")
         document.body.style.overflow = "initial"
@@ -158,6 +159,7 @@ const imageModal = (function() {
         modalElem.classList.add("active")
         document.body.style.overflow = "hidden"
         setZoomLevel(false)
+        setCursorVisibility(false)
 
         if (typeof options === "object" && options.previous) {
             state.previous = options.previous
@@ -190,6 +192,10 @@ const imageModal = (function() {
         }
     }
 
+    const setCursorVisibility = (on) => {
+        document.body.style.cursor = on ? 'auto' : 'none';
+    }
+    
     window.addEventListener("keydown", (e) => {
         if (modalElem.classList.contains("active")) {
             switch (e.key) {

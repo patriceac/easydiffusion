@@ -376,6 +376,8 @@ document.addEventListener("keydown", function(e) {
     }
 })
 
+//let previousImageElem = null
+
 function showImages(reqBody, res, outputContainer, livePreview) {
     let imageItemElements = outputContainer.querySelectorAll(".imgItem")
     if (typeof res != "object") return
@@ -484,6 +486,16 @@ function showImages(reqBody, res, outputContainer, livePreview) {
 
                 imageModal(imageModalParameter(imageElem))
             })
+
+            imageElem.addEventListener("click", function() {
+                imageExpandBtn.dispatchEvent(new Event('click'));
+            });
+
+            if (viewFullSizeImgModal.classList.contains('active')) {
+                //previousImageElem.dispatchEvent(new Event('click'));
+                imageElem.dispatchEvent(new Event('click'));
+            }
+            //previousImageElem = imageElem;
 
             const req = Object.assign({}, reqBody, {
                 seed: result?.seed || reqBody.seed,
@@ -1207,9 +1219,9 @@ function createTask(task) {
     let originalPrompt = task.reqBody.prompt;
     
     // Check if it contains both [ and ]
-    if (originalPrompt.length > 256 && originalPrompt.includes('[') && originalPrompt.includes(']')) {
+    if (originalPrompt.length > 192 && originalPrompt.includes('[') && originalPrompt.includes(']')) {
         // Truncate and add ...
-        task.previewPrompt.innerText = originalPrompt.substring(0, 256) + '...';
+        task.previewPrompt.innerText = originalPrompt.substring(0, 192) + '...';
     } else {
         // Otherwise, just set it as is
         task.previewPrompt.innerText = originalPrompt;

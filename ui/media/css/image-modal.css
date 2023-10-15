@@ -87,6 +87,7 @@
     top: 0;
     right: 0;
     padding-right: var(--scrollbar-width);
+    display: none; /* hide the menu bar in full screen view */
 }
 
 #viewFullSizeImgModal .menu-bar .tertiaryButton {
