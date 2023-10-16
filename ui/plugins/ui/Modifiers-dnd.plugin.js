@@ -1,4 +1,4 @@
-;(function() {
+(function() {
     "use strict"
     if (typeof editorModifierTagsList !== "object") {
         console.error("editorModifierTagsList missing...")
@@ -95,7 +95,8 @@
                         // update activeTags
                         const tag = activeTags.splice(currentPos, 1)
                         activeTags.splice(droppedPos, 0, tag[0])
-                        document.dispatchEvent(new Event("refreshImageModifiers"))
+                        //document.dispatchEvent(new Event("refreshImageModifiers"))
+                        saveImageModifiersState()
                     }
                 }
             }

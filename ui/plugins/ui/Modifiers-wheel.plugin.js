@@ -1,4 +1,4 @@
-;(function() {
+(function() {
     "use strict"
 
     const MAX_WEIGHT = 5
@@ -81,7 +81,8 @@
                             break
                         }
                     }
-                    document.dispatchEvent(new Event("refreshImageModifiers"))
+                    //document.dispatchEvent(new Event("refreshImageModifiers"))
+                    saveImageModifiersState()
                 }
             }
         })

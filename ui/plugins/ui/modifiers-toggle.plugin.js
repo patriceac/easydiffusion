@@ -1,4 +1,4 @@
-;(function() {
+(function() {
     "use strict"
 
     var styleSheet = document.createElement("style")
@@ -46,7 +46,8 @@
 
                     return obj
                 })
-                document.dispatchEvent(new Event("refreshImageModifiers"))
+                //document.dispatchEvent(new Event("refreshImageModifiers"))
+                saveImageModifiersState()
             }
         })
     }
