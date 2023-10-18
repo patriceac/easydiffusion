@@ -911,58 +911,6 @@ async function loadCustomModifiers() {
         setStorageData(CUSTOM_MODIFIERS_KEY, JSON.stringify(sharedCustomModifiers))                
     }
 
-    // collapsing other categories
-    function openCollapsible(element) {
-        const collapsibleHeader = element.querySelector(".collapsible");
-        const handle = element.querySelector(".collapsible-handle");
-        collapsibleHeader.classList.add("active")
-        let content = getNextSibling(collapsibleHeader, '.collapsible-content')
-        if (collapsibleHeader.classList.contains("active")) {
-            content.style.display = "block"
-            if (handle != null) {  // render results don't have a handle
-                handle.innerHTML = '&#x2796;' // minus
-            }
-        }
-        document.dispatchEvent(new CustomEvent('collapsibleClick', { detail: collapsibleHeader }))
-    }
-    
-    function closeCollapsible(element) {
-        const collapsibleHeader = element.querySelector(".collapsible");
-        const handle = element.querySelector(".collapsible-handle");
-        collapsibleHeader.classList.remove("active")
-        let content = getNextSibling(collapsibleHeader, '.collapsible-content')
-        if (!collapsibleHeader.classList.contains("active")) {
-            content.style.display = "none"
-            if (handle != null) {  // render results don't have a handle
-                handle.innerHTML = '&#x2795;' // plus
-            }
-        }
-        document.dispatchEvent(new CustomEvent('collapsibleClick', { detail: collapsibleHeader }))
-    }
-    
-    function collapseOtherCategories(elem) {
-        const modifierCategories = document.querySelectorAll('.modifier-category');
-        modifierCategories.forEach(category => {
-            if (category !== elem) {
-                closeCollapsible(category)
-                //elem.scrollIntoView({ block: "nearest" })
-            }
-        });
-    }
-    
-    function autoCollapseCategories() {
-        const modifierCategories = document.querySelectorAll('.modifier-category');
-        modifierCategories.forEach(modifierCategory => {
-            modifierCategory.addEventListener('click', function(e) {
-                if (imageModifierFilter.value === '') {
-                    collapseOtherCategories(e.target.closest('.modifier-category'))
-                }
-            });
-        });
-    }
-    //document.dispatchEvent(new Event('loadImageModifiers')) // refresh image modifiers
-    //loadCustomImageModifierCards()
-
     /* CLEAR ALL AND ADD BUTTONS */
     let editorModifiers
     let editorModifiersPopup
@@ -1041,6 +989,58 @@ async function loadCustomModifiers() {
         })
     }
 }
+
+// collapsing other categories
+function openCollapsible(element) {
+    const collapsibleHeader = element.querySelector(".collapsible");
+    const handle = element.querySelector(".collapsible-handle");
+    collapsibleHeader.classList.add("active")
+    let content = getNextSibling(collapsibleHeader, '.collapsible-content')
+    if (collapsibleHeader.classList.contains("active")) {
+        content.style.display = "block"
+        if (handle != null) {  // render results don't have a handle
+            handle.innerHTML = '&#x2796;' // minus
+        }
+    }
+    document.dispatchEvent(new CustomEvent('collapsibleClick', { detail: collapsibleHeader }))
+}
+
+function closeCollapsible(element) {
+    const collapsibleHeader = element.querySelector(".collapsible");
+    const handle = element.querySelector(".collapsible-handle");
+    collapsibleHeader.classList.remove("active")
+    let content = getNextSibling(collapsibleHeader, '.collapsible-content')
+    if (!collapsibleHeader.classList.contains("active")) {
+        content.style.display = "none"
+        if (handle != null) {  // render results don't have a handle
+            handle.innerHTML = '&#x2795;' // plus
+        }
+    }
+    document.dispatchEvent(new CustomEvent('collapsibleClick', { detail: collapsibleHeader }))
+}
+
+function collapseOtherCategories(elem) {
+    const modifierCategories = document.querySelectorAll('.modifier-category');
+    modifierCategories.forEach(category => {
+        if (category !== elem) {
+            closeCollapsible(category)
+            //elem.scrollIntoView({ block: "nearest" })
+        }
+    });
+}
+
+function autoCollapseCategories() {
+    const modifierCategories = document.querySelectorAll('.modifier-category');
+    modifierCategories.forEach(modifierCategory => {
+        modifierCategory.addEventListener('click', function(e) {
+            if (imageModifierFilter.value === '') {
+                collapseOtherCategories(e.target.closest('.modifier-category'))
+            }
+        });
+    });
+}
+//document.dispatchEvent(new Event('loadImageModifiers')) // refresh image modifiers
+//loadCustomImageModifierCards()
 
 function getLoRAFromActiveTags(activeTags, imageModifiers) {
     // Prepare a result array
