@@ -96,8 +96,8 @@ function createModifierGroup(modifierGroup, initiallyExpanded, removeBy) {
             const trimmedName = trimModifiers(modifierName)
 
             modifierCard.addEventListener("click", () => {
-                //if (activeTags.map((x) => trimModifiers(x.name)).includes(trimmedName)) {
-                if (activeTags.map((x) => trimModifiers(x.originElement.querySelector(".modifier-card-label p").dataset.fullName)).includes(trimmedName)) {
+                if (activeTags.map((x) => trimModifiers(x.name)).includes(trimmedName)) {
+                //if (activeTags.map((x) => trimModifiers(x.originElement.querySelector(".modifier-card-label p").dataset.fullName)).includes(trimmedName)) {
                     // remove modifier from active array
                     //activeTags = activeTags.filter((x) => trimModifiers(x.name) != trimmedName)
                     activeTags = activeTags.filter((x) => trimModifiers(x.originElement.querySelector(".modifier-card-label p").dataset.fullName) != trimmedName)
