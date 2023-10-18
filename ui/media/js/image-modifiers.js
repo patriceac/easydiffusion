@@ -234,6 +234,7 @@ function refreshModifiersState(newTags, inactiveTags) {
             })
         
         if (found == false) {
+            /*
             if (closestModifier) {
                 let shortTag = ""
                 const imageModifierCard = closestModifier.cloneNode(true);
@@ -250,6 +251,7 @@ function refreshModifiersState(newTags, inactiveTags) {
                 closestModifier.classList.add("partially-active-class");
                 closestModifier.querySelector(".modifier-card-image-overlay").innerText = "-";
             } else {
+            */
                 // custom tag went missing, create one here
                 let modifierCard = createModifierCard(tag, undefined, false); // create a modifier card for the missing tag, no image
                 
@@ -267,8 +269,9 @@ function refreshModifiersState(newTags, inactiveTags) {
                     name: tag,
                     element: modifierCard,
                     originElement: undefined, // no origin element for missing tags
+                    missing: true,
                 });
-            }
+            //}
         }
     })
     refreshTagsList(inactiveTags)
@@ -1140,64 +1143,53 @@ function isStringInArray(array, searchString) {
     });
 }
 
-let previousLoRA = "";
-let previousLoRAWeight = "";
-//let previousLoRABlockWeights = ""; // block weights not supported by ED at this time
+let previousLoRAs = [];
+let previousLoRAWeights = [];
+
 function handleRefreshImageModifiers() {
-    let loraModelData = loraModelField.value
-    let modelNames = loraModelData["modelNames"]
-    let modelStrengths = loraModelData["modelWeights"]
-    
-    let LoRA = getLoRAFromActiveTags(activeTags, sharedCustomModifiers); // find active LoRA
-    if (LoRA !== null && LoRA.length > 0 && testDiffusers?.checked) {
-        if (isStringInArray(modelsCache.options.lora, LoRA[0].loraname)) {
-            if (modelNames !== LoRA[0].loraname) {
-                // If the current LoRA is not in activeTags, save it
-                if (!isLoRAInActiveTags(activeTags, sharedCustomModifiers, modelNames[0])) {
-                    previousLoRA = modelNames[0];
-                    previousLoRAWeight = modelStrengths[0];
-                    //previousLoRABlockWeights = TBD // block weights not supported by ED at this time
-                }
-                // Set the new LoRA value
-                //modelNames[0].setAttribute("data-path", LoRA[0].loraname);
-                modelNames[0] = LoRA[0].loraname;
-                modelStrengths[0] = LoRA[0].weight || 0.5;
-                loraModelField.value = loraModelData
-                //loraAlphaSlider.value = lora_alpha_0.value * 100;
-                //TBD.value = LoRA[0].blockweights; // block weights not supported by ED at this time
+    const loraModelData = loraModelField.value;
+    let modelNames = loraModelData.modelNames;
+    let modelWeights = loraModelData.modelWeights;
+
+    const activeLoRAs = getLoRAFromActiveTags(activeTags, sharedCustomModifiers);
+    let newModelNames = [];
+    let newModelWeights = [];
+
+    // Handle active LoRAs
+    if (activeLoRAs && Array.isArray(activeLoRAs)) {
+        for (let activeLoRA of activeLoRAs) {
+            const newLoRAName = activeLoRA.loraname;
+            const newLoRAWeight = activeLoRA.weight || 0.5;
+
+            if (!isStringInArray(modelsCache.options.lora, newLoRAName)) {
+                showToast(`LoRA not found: ${newLoRAName}`, 5000, true);
             }
+            
+            newModelNames.push(newLoRAName);
+            newModelWeights.push(newLoRAWeight);
         }
-        else
-        {
-            showToast("LoRA not found: " + LoRA[0].loraname, 5000, true)
-        }
-    } else {
-        // Check if the current lora_0.value is in activeTags
-        if (isLoRAInActiveTags(activeTags, sharedCustomModifiers, modelNames[0])) {
-            previousLoRA = previousLoRA === undefined ? "" : previousLoRA
-            if (previousLoRA === "" || isStringInArray(modelsCache.options.lora, previousLoRA)) {
-                // This LoRA is inactive. Restore the previous LoRA value.
-                //console.log("Current LoRA in activeTags:", lora_0.value, previousLoRA);
-                //lora_0.setAttribute("data-path", previousLoRA);
-                modelNames[0] = previousLoRA;
-                //loraAlphaSlider.value = previousLoRAWeight * 100;
-                modelStrengths[0] = previousLoRAWeight
-                loraModelField.value = loraModelData
-                //TBD.value = previousLoRABlockWeights // block weights not supported by ED at this time
-            }
-            else
-            {
-                showToast("LoRA not found: " + previousLoRA, 5000, true)
-            }
-        }
-        //else
-        //{
-        //    //console.log("Current LoRA not in activeTags:", lora_0.value);
-        //}
     }
-    
-    showLoRAs()
-    
+
+    // Handle inactive LoRAs
+    for (let i = 0; i < modelNames.length; i++) {
+        const currentLoRAName = modelNames[i];
+        const currentLoRAWeight = modelWeights[i];
+        
+        if (!isLoRAInActiveTags(activeTags, sharedCustomModifiers, currentLoRAName)) {
+            previousLoRAs.push(currentLoRAName);
+            previousLoRAWeights.push(currentLoRAWeight);
+            
+            newModelNames.push(currentLoRAName);
+            newModelWeights.push(currentLoRAWeight);
+        }
+    }
+
+    loraModelField.value = {
+        modelNames: newModelNames,
+        modelWeights: newModelWeights
+    };
+
+    showLoRAs();
     return true;
 }
 
