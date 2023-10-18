@@ -503,130 +503,6 @@ async function loadCustomModifiers() {
     // set up categories auto-collapse
     autoCollapseCategories()
 
-    // add the export and import links to the custom modifiers dialog
-    const imageModifierDialog = customModifiersTextBox.parentElement
-    if (imageModifierDialog.querySelector('#modifierBackupLinks') === null) {
-        imageModifierDialog.insertAdjacentHTML('beforeend', `<p><small>Use the below links to export and import custom image modifiers.<br />
-                                                            (if you have set any visuals, these will be saved/restored too)</small></p><p id="modifierBackupLinks">
-                                                            <small><a id="exportModifiers">Export modifiers</a> - <a id="importModifiers">Import modifiers</a></small></p>`)
-    
-        // export link
-        let downloadLink = document.getElementById("exportModifiers")
-        downloadLink.addEventListener("click", function(event) {
-            // export exactly what's shown in the textbox even if it hasn't been saved yet
-            event.preventDefault()
-            let inputCustomModifiers = customModifiersTextBox.value
-            let tempModifiers = JSON.parse(JSON.stringify(sharedCustomModifiers)); // create a deep copy of sharedCustomModifiers
-            inputCustomModifiers = inputCustomModifiers.replace(/^\s*$(?:\r\n?|\n)/gm, "") // remove empty lines
-            if (inputCustomModifiers !== '') {
-                inputCustomModifiers = importCustomModifiers(inputCustomModifiers)
-                updateEntries(inputCustomModifiers, tempModifiers)
-                downloadJSON(tempModifiers, "Image Modifiers.json")
-            }
-            else
-            {
-                downloadJSON(sharedCustomModifiers, "Image Modifiers.json")
-            }
-        })
-                                      
-        function downloadJSON(jsonData, fileName) {
-            var file = new Blob([JSON.stringify(jsonData, null, 2)], { type: "application/json" })
-            var fileUrl = URL.createObjectURL(file)
-            var downloadLink = document.createElement("a")
-            downloadLink.href = fileUrl
-            downloadLink.download = fileName
-            downloadLink.click()
-            URL.revokeObjectURL(fileUrl)
-        }
-        
-        // import link
-        let input = document.createElement("input")
-        input.style.display = "none"
-        input.type = "file"
-        document.body.appendChild(input)
-        
-        let fileSelector = document.querySelector("#importModifiers")        
-        fileSelector.addEventListener("click", function(event) {
-            event.preventDefault()
-            input.click()
-        })
-        
-        input.addEventListener("change", function(event) {
-            let selectedFile = event.target.files[0]
-            let reader = new FileReader()
-            
-            reader.onload = function(event) {
-                sharedCustomModifiers = JSON.parse(event.target.result)
-                // save the updated modifier list to persistent storage
-                saveCustomCategories()
-                // refresh the modifiers list
-                customModifiersTextBox.value = exportCustomModifiers(sharedCustomModifiers)
-                saveCustomModifiers()
-                //loadModifierList()
-                input.value = ''
-            }
-            reader.readAsText(selectedFile)
-        })
-
-        function filterImageModifierList() {
-            let search = imageModifierFilter.value.toLowerCase();
-            for (let category of document.querySelectorAll(".modifier-category")) {
-              let categoryVisible = false;
-              for (let card of category.querySelectorAll(".modifier-card")) {
-                let label = card.querySelector(".modifier-card-label p").innerText.toLowerCase();
-                if (label.indexOf(search) == -1) {
-                  card.classList.add("hide");
-                } else {
-                  card.classList.remove("hide");
-                  categoryVisible = true;
-                }
-              }
-              if (categoryVisible && search !== "") {
-                openCollapsible(category);
-                category.classList.remove("hide");
-              } else {
-                closeCollapsible(category);
-                if (search !== "") {
-                    category.classList.add("hide");
-                }
-                else
-                {
-                    category.classList.remove("hide");
-                }
-              }
-            }
-        }
-        // Call debounce function on filterImageModifierList function with 200ms wait time
-        //const debouncedFilterImageModifierList = debounce(filterImageModifierList, 200);
-        const debouncedFilterImageModifierList = filterImageModifierList;
-
-        // add the searchbox
-        customModifierEntriesToolbar.insertAdjacentHTML('afterend', `<input type="text" id="image-modifier-filter" placeholder="Search for..." autocomplete="off"/>`)
-        imageModifierFilter = document.getElementById("image-modifier-filter") // search box
-        
-        // Add the debounced function to the keyup event listener
-        imageModifierFilter.addEventListener('keyup', debouncedFilterImageModifierList);
-
-        // select the text on focus
-        imageModifierFilter.addEventListener('focus', function(event) {
-            imageModifierFilter.select()
-        });
-
-        // empty the searchbox on escape                
-        imageModifierFilter.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                if (imageModifierFilter.value !== '') {
-                    imageModifierFilter.value = '';
-                    filterImageModifierList();
-                    event.stopPropagation();
-                }
-            }
-        });
-
-        // update the custom modifiers textbox's default string
-        customModifiersTextBox.placeholder = 'Enter your custom modifiers, one-per-line. Start a line with # to create custom categories.'
-    }
-
     // refresh modifiers in the UI
     function loadModifierList() {
         let customModifiersGroupElementArray = Array.from(editorModifierEntries.querySelectorAll('.custom-modifier-category'));
@@ -1161,169 +1037,303 @@ async function loadCustomModifiers() {
             }
         })
     }
-    
-    function getLoRAFromActiveTags(activeTags, imageModifiers) {
-        // Prepare a result array
-        let result = [];
-    
-        // Iterate over activeTags
-        for (let tag of activeTags) {
-            // Check if the tag is marked active
-            if (!tag.inactive) {
-                // Iterate over the categories in imageModifiers
-                for (let category of imageModifiers) {
-                    // Iterate over the modifiers in the current category
-                    for (let modifier of category.modifiers) {
-                        // Check if the tag name matches the modifier
-                        if (trimModifiers(tag.name.toLowerCase()) === trimModifiers(modifier.modifier.toLowerCase())) {
-                            // If there's a LoRA value, add it to the result array
-                            if (modifier.LoRA && modifier.LoRA.length > 0) {
-                                result.push(modifier.LoRA);
-                            }
-                        }
-                    }
-                }
-            }
-        }
+}
 
-        // If no LoRA tags were found, return null
-        if (result.length === 0) {
-            return null;
-        }
-    
-        // Return the result array
-        return result.flat();
-    }
+function getLoRAFromActiveTags(activeTags, imageModifiers) {
+    // Prepare a result array
+    let result = [];
 
-    function isLoRAInActiveTags(activeTags, imageModifiers, givenLoRA) {
-        // Iterate over activeTags
-        for (let tag of activeTags) {
+    // Iterate over activeTags
+    for (let tag of activeTags) {
+        // Check if the tag is marked active
+        if (!tag.inactive) {
             // Iterate over the categories in imageModifiers
             for (let category of imageModifiers) {
                 // Iterate over the modifiers in the current category
                 for (let modifier of category.modifiers) {
                     // Check if the tag name matches the modifier
-                    if (trimModifiers(tag.name) === trimModifiers(modifier.modifier)) {
-                        // Check if there's a LoRA value
-                        if (modifier.LoRA) {
-                            // Iterate over each LoRA object
-                            for(let loraObject of modifier.LoRA) {
-                                // Check if the filename matches the given LoRA
-                                if(loraObject.loraname.toLowerCase() === givenLoRA.toLowerCase()) {
-                                    return true;
-                                }
+                    if (trimModifiers(tag.name.toLowerCase()) === trimModifiers(modifier.modifier.toLowerCase())) {
+                        // If there's a LoRA value, add it to the result array
+                        if (modifier.LoRA && modifier.LoRA.length > 0) {
+                            result.push(modifier.LoRA);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // If no LoRA tags were found, return null
+    if (result.length === 0) {
+        return null;
+    }
+
+    // Return the result array
+    return result.flat();
+}
+
+function isLoRAInActiveTags(activeTags, imageModifiers, givenLoRA) {
+    // Iterate over activeTags
+    for (let tag of activeTags) {
+        // Iterate over the categories in imageModifiers
+        for (let category of imageModifiers) {
+            // Iterate over the modifiers in the current category
+            for (let modifier of category.modifiers) {
+                // Check if the tag name matches the modifier
+                if (trimModifiers(tag.name) === trimModifiers(modifier.modifier)) {
+                    // Check if there's a LoRA value
+                    if (modifier.LoRA) {
+                        // Iterate over each LoRA object
+                        for(let loraObject of modifier.LoRA) {
+                            // Check if the filename matches the given LoRA
+                            if(loraObject.loraname.toLowerCase() === givenLoRA?.toLowerCase()) {
+                                return true;
                             }
                         }
                     }
                 }
             }
         }
-    
-        // If the given LoRA was not found in activeTags, return false
-        return false;
     }
 
-    function isLoRAInImageModifiers(imageModifiers, givenModifier) {
-        for (let category of imageModifiers) {
-            for (let modifier of category.modifiers) {
-                // Check if the given modifier matches and if it has a LoRA property
-                if (modifier.modifier.toLowerCase().trim() === givenModifier.toLowerCase().trim() && modifier.LoRA) {
-                    // If the modifier has any LoRA object associated, return true
-                    if(modifier.LoRA.length > 0) {
-                        return true;
-                    }
-                }
-            }
-        }
-    
-        // If the given modifier was not found or it doesn't have a LoRA, return false
-        return false;
-    }
-
-    function showLoRAs() {
-        let overlays = document.querySelectorAll(".custom-modifier-category .modifier-card-overlay, .modifier-card-tiny .modifier-card-overlay")
-        overlays.forEach((card) => {
-            let modifierName = card.parentElement.getElementsByClassName("modifier-card-label")[0].getElementsByTagName("p")[0].dataset.fullName
-            modifierName = trimModifiers(modifierName)
-            if (isLoRAInImageModifiers(sharedCustomModifiers, modifierName)) {
-                //console.log("LoRA modifier:", modifierName)
-                card.parentElement.classList.add('lora-card')
-            }
-            else
-            {
-                card.classList.remove('lora-card')
-            }
-        })
-
-    }
-
-    function isStringInArray(array, searchString) {
-        return array.some(function(item) {
-            return item.toLowerCase() === searchString.toLowerCase();
-        });
-    }
-
-    let previousLoRA = "";
-    let previousLoRAWeight = "";
-    //let previousLoRABlockWeights = ""; // block weights not supported by ED at this time
-    function handleRefreshImageModifiers(e) {
-        let LoRA = getLoRAFromActiveTags(activeTags, sharedCustomModifiers); // find active LoRA
-        if (LoRA !== null && LoRA.length > 0 && testDiffusers?.checked) {
-            if (isStringInArray(modelsCache.options.lora, LoRA[0].loraname)) {
-                if (lora_0.value !== LoRA[0].loraname) {
-                    // If the current LoRA is not in activeTags, save it
-                    if (!isLoRAInActiveTags(activeTags, sharedCustomModifiers, lora_0.value)) {
-                        previousLoRA = lora_0.value;
-                        previousLoRAWeight = lora_alpha_0.value
-                        //previousLoRABlockWeights = TBD // block weights not supported by ED at this time
-                    }
-                    // Set the new LoRA value
-                    lora_0.setAttribute("data-path", LoRA[0].loraname);
-                    lora_0.value = LoRA[0].loraname;
-                    lora_alpha_0.value = LoRA[0].weight || 0.5;
-                    //loraAlphaSlider.value = lora_alpha_0.value * 100;
-                    //TBD.value = LoRA[0].blockweights; // block weights not supported by ED at this time
-                }
-            }
-            else
-            {
-                showToast("LoRA not found: " + LoRA[0].loraname, 5000, true)
-            }
-        } else {
-            // Check if the current lora_0.value is in activeTags
-            if (isLoRAInActiveTags(activeTags, sharedCustomModifiers, lora_0.value)) {
-                if (previousLoRA === "" || isStringInArray(modelsCache.options.lora, previousLoRA)) {
-                    // This LoRA is inactive. Restore the previous LoRA value.
-                    //console.log("Current LoRA in activeTags:", lora_0.value, previousLoRA);
-                    lora_0.setAttribute("data-path", previousLoRA);
-                    lora_0.value = previousLoRA;
-                    //loraAlphaSlider.value = previousLoRAWeight * 100;
-                    lora_alpha_0.value = previousLoRAWeight
-                    //TBD.value = previousLoRABlockWeights // block weights not supported by ED at this time
-                }
-                else
-                {
-                    showToast("LoRA not found: " + previousLoRA, 5000, true)
-                }
-            }
-            //else
-            //{
-            //    //console.log("Current LoRA not in activeTags:", lora_0.value);
-            //}
-        }
-        
-        showLoRAs()
-        
-        return true;
-    }
-
-    showLoRAs()
+    // If the given LoRA was not found in activeTags, return false
+    return false;
 }
+
+function isLoRAInImageModifiers(imageModifiers, givenModifier) {
+    for (let category of imageModifiers) {
+        for (let modifier of category.modifiers) {
+            // Check if the given modifier matches and if it has a LoRA property
+            if (modifier.modifier.toLowerCase().trim() === givenModifier.toLowerCase().trim() && modifier.LoRA) {
+                // If the modifier has any LoRA object associated, return true
+                if(modifier.LoRA.length > 0) {
+                    return true;
+                }
+            }
+        }
+    }
+
+    // If the given modifier was not found or it doesn't have a LoRA, return false
+    return false;
+}
+
+function showLoRAs() {
+    let overlays = document.querySelectorAll(".custom-modifier-category .modifier-card-overlay, .modifier-card-tiny .modifier-card-overlay")
+    overlays.forEach((card) => {
+        let modifierName = card.parentElement.getElementsByClassName("modifier-card-label")[0].getElementsByTagName("p")[0].dataset.fullName
+        modifierName = trimModifiers(modifierName)
+        if (isLoRAInImageModifiers(sharedCustomModifiers, modifierName)) {
+            //console.log("LoRA modifier:", modifierName)
+            card.parentElement.classList.add('lora-card')
+        }
+        else
+        {
+            card.classList.remove('lora-card')
+        }
+    })
+
+}
+
+function isStringInArray(array, searchString) {
+    return array.some(function(item) {
+        return item.toLowerCase() === searchString?.toLowerCase();
+    });
+}
+
+let previousLoRA = "";
+let previousLoRAWeight = "";
+//let previousLoRABlockWeights = ""; // block weights not supported by ED at this time
+function handleRefreshImageModifiers() {
+    let loraModelData = loraModelField.value
+    let modelNames = loraModelData["modelNames"]
+    let modelStrengths = loraModelData["modelWeights"]
+    
+    let LoRA = getLoRAFromActiveTags(activeTags, sharedCustomModifiers); // find active LoRA
+    if (LoRA !== null && LoRA.length > 0 && testDiffusers?.checked) {
+        if (isStringInArray(modelsCache.options.lora, LoRA[0].loraname)) {
+            if (modelNames !== LoRA[0].loraname) {
+                // If the current LoRA is not in activeTags, save it
+                if (!isLoRAInActiveTags(activeTags, sharedCustomModifiers, modelNames[0])) {
+                    previousLoRA = modelNames[0];
+                    previousLoRAWeight = modelStrengths[0];
+                    //previousLoRABlockWeights = TBD // block weights not supported by ED at this time
+                }
+                // Set the new LoRA value
+                //modelNames[0].setAttribute("data-path", LoRA[0].loraname);
+                modelNames[0] = LoRA[0].loraname;
+                modelStrengths[0] = LoRA[0].weight || 0.5;
+                loraModelField.value = loraModelData
+                //loraAlphaSlider.value = lora_alpha_0.value * 100;
+                //TBD.value = LoRA[0].blockweights; // block weights not supported by ED at this time
+            }
+        }
+        else
+        {
+            showToast("LoRA not found: " + LoRA[0].loraname, 5000, true)
+        }
+    } else {
+        // Check if the current lora_0.value is in activeTags
+        if (isLoRAInActiveTags(activeTags, sharedCustomModifiers, modelNames[0])) {
+            previousLoRA = previousLoRA === undefined ? "" : previousLoRA
+            if (previousLoRA === "" || isStringInArray(modelsCache.options.lora, previousLoRA)) {
+                // This LoRA is inactive. Restore the previous LoRA value.
+                //console.log("Current LoRA in activeTags:", lora_0.value, previousLoRA);
+                //lora_0.setAttribute("data-path", previousLoRA);
+                modelNames[0] = previousLoRA;
+                //loraAlphaSlider.value = previousLoRAWeight * 100;
+                modelStrengths[0] = previousLoRAWeight
+                loraModelField.value = loraModelData
+                //TBD.value = previousLoRABlockWeights // block weights not supported by ED at this time
+            }
+            else
+            {
+                showToast("LoRA not found: " + previousLoRA, 5000, true)
+            }
+        }
+        //else
+        //{
+        //    //console.log("Current LoRA not in activeTags:", lora_0.value);
+        //}
+    }
+    
+    showLoRAs()
+    
+    return true;
+}
+
+showLoRAs()
+
+// add the export and import links to the custom modifiers dialog
+function initCustomModifiersDialog() {
+    const imageModifierDialog = customModifiersTextBox.parentElement
+    
+    imageModifierDialog.insertAdjacentHTML('beforeend', `<p><small>Use the below links to export and import custom image modifiers.<br />
+                                                        (if you have set any visuals, these will be saved/restored too)</small></p><p id="modifierBackupLinks">
+                                                        <small><a id="exportModifiers">Export modifiers</a> - <a id="importModifiers">Import modifiers</a></small></p>`)
+
+    // export link
+    let downloadLink = document.getElementById("exportModifiers")
+    downloadLink.addEventListener("click", function(event) {
+        // export exactly what's shown in the textbox even if it hasn't been saved yet
+        event.preventDefault()
+        let inputCustomModifiers = customModifiersTextBox.value
+        let tempModifiers = JSON.parse(JSON.stringify(sharedCustomModifiers)); // create a deep copy of sharedCustomModifiers
+        inputCustomModifiers = inputCustomModifiers.replace(/^\s*$(?:\r\n?|\n)/gm, "") // remove empty lines
+        if (inputCustomModifiers !== '') {
+            inputCustomModifiers = importCustomModifiers(inputCustomModifiers)
+            updateEntries(inputCustomModifiers, tempModifiers)
+            downloadJSON(tempModifiers, "Image Modifiers.json")
+        }
+        else
+        {
+            downloadJSON(sharedCustomModifiers, "Image Modifiers.json")
+        }
+    })
+                                  
+    function downloadJSON(jsonData, fileName) {
+        var file = new Blob([JSON.stringify(jsonData, null, 2)], { type: "application/json" })
+        var fileUrl = URL.createObjectURL(file)
+        var downloadLink = document.createElement("a")
+        downloadLink.href = fileUrl
+        downloadLink.download = fileName
+        downloadLink.click()
+        URL.revokeObjectURL(fileUrl)
+    }
+    
+    // import link
+    let input = document.createElement("input")
+    input.style.display = "none"
+    input.type = "file"
+    document.body.appendChild(input)
+    
+    let fileSelector = document.querySelector("#importModifiers")        
+    fileSelector.addEventListener("click", function(event) {
+        event.preventDefault()
+        input.click()
+    })
+    
+    input.addEventListener("change", function(event) {
+        let selectedFile = event.target.files[0]
+        let reader = new FileReader()
+        
+        reader.onload = function(event) {
+            sharedCustomModifiers = JSON.parse(event.target.result)
+            // save the updated modifier list to persistent storage
+            saveCustomCategories()
+            // refresh the modifiers list
+            customModifiersTextBox.value = exportCustomModifiers(sharedCustomModifiers)
+            saveCustomModifiers()
+            //loadModifierList()
+            input.value = ''
+        }
+        reader.readAsText(selectedFile)
+    })
+
+    function filterImageModifierList() {
+        let search = imageModifierFilter.value.toLowerCase();
+        for (let category of document.querySelectorAll(".modifier-category")) {
+          let categoryVisible = false;
+          for (let card of category.querySelectorAll(".modifier-card")) {
+            let label = card.querySelector(".modifier-card-label p").innerText.toLowerCase();
+            if (label.indexOf(search) == -1) {
+              card.classList.add("hide");
+            } else {
+              card.classList.remove("hide");
+              categoryVisible = true;
+            }
+          }
+          if (categoryVisible && search !== "") {
+            openCollapsible(category);
+            category.classList.remove("hide");
+          } else {
+            closeCollapsible(category);
+            if (search !== "") {
+                category.classList.add("hide");
+            }
+            else
+            {
+                category.classList.remove("hide");
+            }
+          }
+        }
+    }
+    // Call debounce function on filterImageModifierList function with 200ms wait time
+    //const debouncedFilterImageModifierList = debounce(filterImageModifierList, 200);
+    const debouncedFilterImageModifierList = filterImageModifierList;
+
+    // add the searchbox
+    customModifierEntriesToolbar.insertAdjacentHTML('afterend', `<input type="text" id="image-modifier-filter" placeholder="Search for..." autocomplete="off"/>`)
+    imageModifierFilter = document.getElementById("image-modifier-filter") // search box
+    
+    // Add the debounced function to the keyup event listener
+    imageModifierFilter.addEventListener('keyup', debouncedFilterImageModifierList);
+
+    // select the text on focus
+    imageModifierFilter.addEventListener('focus', function(event) {
+        imageModifierFilter.select()
+    });
+
+    // empty the searchbox on escape                
+    imageModifierFilter.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            if (imageModifierFilter.value !== '') {
+                imageModifierFilter.value = '';
+                filterImageModifierList();
+                event.stopPropagation();
+            }
+        }
+    });
+
+    // update the custom modifiers textbox's default string
+    customModifiersTextBox.placeholder = 'Enter your custom modifiers, one-per-line. Start a line with # to create custom categories.'
+}
+initCustomModifiersDialog()
 
 customModifiersTextBox.addEventListener("change", saveCustomModifiers)
 
 /* RESTORE IMAGE MODIFIERS */
 function saveImageModifiersState() {
+    handleRefreshImageModifiers()
     localStorage.setItem('image_modifiers', JSON.stringify(activeTags))
     return true
 }
