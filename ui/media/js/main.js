@@ -462,13 +462,15 @@ function showImages(reqBody, res, outputContainer, livePreview) {
             const imageExpandBtn = imageItemElem.querySelector(".imgExpandBtn")
             imageExpandBtn.addEventListener("click", function() {
                 function previousImage(img) {
-                    const allImages = Array.from(outputContainer.parentNode.querySelectorAll(".imgItem img"))
+                    //const allImages = Array.from(outputContainer.parentNode.querySelectorAll(".imgItem img"))
+                    const allImages = Array.from(outputContainer.closest("#preview-content").querySelectorAll(".imgItem img"))
                     const index = allImages.indexOf(img)
                     return allImages.slice(0, index).reverse()[0]
                 }
 
                 function nextImage(img) {
-                    const allImages = Array.from(outputContainer.parentNode.querySelectorAll(".imgItem img"))
+                    //const allImages = Array.from(outputContainer.parentNode.querySelectorAll(".imgItem img"))
+                    const allImages = Array.from(outputContainer.closest("#preview-content").querySelectorAll(".imgItem img"))
                     const index = allImages.indexOf(img)
                     return allImages.slice(index + 1)[0]
                 }
