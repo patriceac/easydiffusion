@@ -137,6 +137,9 @@ const imageModal = (function() {
         clear()
         modalElem.classList.remove("active")
         document.body.style.overflow = "initial"
+        if (document.fullscreenElement) {
+            document.exitFullscreen();
+        }
     }
 
     /**
@@ -160,7 +163,10 @@ const imageModal = (function() {
         document.body.style.overflow = "hidden"
         setZoomLevel(false)
         setCursorVisibility(false)
-
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen();
+        }
+        
         if (typeof options === "object" && options.previous) {
             state.previous = options.previous
             backElem.style.display = "unset"
@@ -196,6 +202,11 @@ const imageModal = (function() {
         document.body.style.cursor = on ? 'auto' : 'none';
     }
     
+    document.addEventListener("fullscreenchange", function() {
+        if (!document.fullscreenElement) {
+            close()
+        }
+    });
     window.addEventListener("keydown", (e) => {
         if (modalElem.classList.contains("active")) {
             switch (e.key) {
@@ -213,7 +224,8 @@ const imageModal = (function() {
     })
     window.addEventListener("click", (e) => {
         if (modalElem.classList.contains("active")) {
-            if (e.target === backdrop || e.target === closeElem) {
+            const img = imageContainer.querySelector("img")
+            if (e.target === backdrop || e.target === closeElem || e.target === img) {
                 close()
             }
 
