@@ -1167,6 +1167,20 @@ function createTask(task) {
             taskEntry.setAttribute("draggable", false)
         }, 2000)
     )
+    taskEntry.addEventListener("mousedown", (e) => {
+        // Check if the Ctrl key is NOT pressed
+        if (!e.ctrlKey) {
+            // Set the "draggable" attribute to true
+            taskEntry.setAttribute("draggable", true);
+        }
+    });
+    // Add a debounce delay to allow mobile to bouble tap.
+    taskEntry.addEventListener(
+        "mouseup",
+        debounce((e) => {
+            taskEntry.setAttribute("draggable", false)
+        }, 2000)
+    )
     draghandle.addEventListener("click", (e) => {
         e.preventDefault() // Don't allow the results to be collapsed...
     })

@@ -39,11 +39,17 @@ function toggleCollapsible(element) {
             // render results don't have a handle
             handle.innerHTML = "&#x2795;" // plus
         }
+        if (element.classList.contains("imageTaskContainer")) {
+            element.style.backgroundColor = "darkslateblue";  // Set the background color to darkslateblue when collapsed
+        }
     } else {
         content.style.display = "block"
         if (handle != null) {
             // render results don't have a handle
             handle.innerHTML = "&#x2796;" // minus
+        }
+        if (element.classList.contains("imageTaskContainer")) {
+            element.style.backgroundColor = "";  // Resetting the background color
         }
     }
     document.dispatchEvent(new CustomEvent("collapsibleClick", { detail: collapsibleHeader }))
