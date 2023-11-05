@@ -219,10 +219,12 @@
     border-style: solid;
     border-color: transparent transparent rgb(90 100 177 / 94%) transparent;
 }
+/*
 .modifier-category .tooltip:hover .tooltip-text {
     visibility: visible;
     opacity: 1;
 }
+*/
 #modifier-card-size-slider {
     width: 6em;
     margin-bottom: 0.5em;
@@ -291,12 +293,13 @@ div.modifier-category.hide {
     position: relative;
     transform: unset;
 }
-
+/*
 .modifier-category .modifier-card-overlay:hover ~ .modifier-card-container .modifier-card-label.tooltip .tooltip-text {
     visibility: visible;
     opacity: 1;
     z-index: 2000;
 }
+*/
 .modifier-category .modifier-card-label:hover .tooltip-text {
     z-index: 2000;
 }

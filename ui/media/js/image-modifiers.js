@@ -545,237 +545,6 @@ async function loadCustomModifiers() {
         }
     }
 
-    // extract LoRA tags from strings
-    function extractLoraTags(imageTag) {
-        // Define the regular expression for the tags
-        const regex = /<lora:([^:>]+)(?::([^:>]*))?(?::([^:>]*))?>/gi;
-    
-        // Initialize an array to hold the matches
-        let matches = [];
-    
-        // Iterate over the string, finding matches
-        for (const match of imageTag.matchAll(regex)) {
-            // Initialize an object to hold a match
-            let loraTag = {
-                loraname: match[1],
-            };
-    
-            // If weight is provided, add it to the loraTag object
-            if (match[2] !== undefined && match[2] !== '') {
-                loraTag.weight = parseFloat(match[2]);
-            }
-    
-            // If blockweights are provided, add them to the loraTag object
-            if (match[3] !== undefined && match[3] !== '') {
-                loraTag.blockweights = match[3];
-            }
-    
-            // Add the loraTag object to the array of matches
-            matches.push(loraTag);
-        }
-    
-        // Clean up the imageTag string
-        let cleanedImageTag = imageTag.replace(regex, '').trim();
-    
-        // Return the array of matches and cleaned imageTag string
-        return {
-            LoRA: matches,
-            imageTag: cleanedImageTag
-        };
-    }
-
-    // transform custom modifiers from flat format to structured object
-    function importCustomModifiers(input) {
-        let res = [];
-        let lines = input.split("\n");
-        let currentCategory = "Custom Modifiers";
-        let currentModifiers = [];
-        for (let line of lines) {
-            if (line.startsWith("#")) {
-                if (currentModifiers.length > 0) {
-                    res.push({ category: currentCategory, modifiers: currentModifiers });
-                }
-                currentCategory = line.substring(1);
-                currentModifiers = [];
-            } else {
-                const dropAnImageHere = "data:image/png;base64,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"
-                
-                let { LoRA, imageTag } = extractLoraTags(line);
-                if (LoRA.length > 0) {
-                    currentModifiers.push({
-                        modifier: imageTag,
-                        LoRA: LoRA,
-                        previews: [
-                            { name: "portrait", image: dropAnImageHere },
-                            { name: "landscape", image: "" }
-                        ]
-                    });
-                } else {
-                    currentModifiers.push({
-                        modifier: line,
-                        previews: [
-                            { name: "portrait", image: dropAnImageHere },
-                            { name: "landscape", image: "" }
-                        ]
-                    });
-                }
-            }
-        }
-        res.push({ category: currentCategory, modifiers: currentModifiers });
-        return res;
-    }
-    
-    // transform custom modifiers from structured object to flat format
-    function exportCustomModifiers(json) {
-        let result = '';
-    
-        json.forEach(item => {
-            result += '#' + item.category + '\n';
-            item.modifiers.forEach(modifier => {
-                let modifierString = modifier.modifier;
-                // Check if modifier has a LoRA array and it is not empty
-                if (modifier.LoRA && modifier.LoRA.length > 0) {
-                    modifier.LoRA.forEach(lora => {
-                        let loraname = lora.loraname || lora.filename; // ensure backward compatibility
-                        let weight = lora.weight || lora.multiplier; // ensure backward compatibility
-    
-                        modifierString += ' <lora:' + loraname;
-                        // Check if loraTag has a weight/multiplier
-                        if (weight) {
-                            modifierString += ':' + weight;
-                            // Check if loraTag has blockweights (only if there's a weight/multiplier)
-                            if (lora.blockweights) {
-                                modifierString += ':' + lora.blockweights;
-                            }
-                        }
-                        modifierString += '>';
-                    });
-                }
-                result += modifierString + '\n';
-            });
-            result += '\n'; // Add a new line after each category
-        });
-    
-        return result;
-    }
-    
-    function updatePortraitBasedOnDistance(newModifier, allExistingModifiers) {
-        let closestModifier = null;
-        let minDistance = Infinity;
-
-        for (let k = 0; k < allExistingModifiers.length; k++) {
-            let distance = levenshteinDistance(newModifier.modifier, allExistingModifiers[k].modifier);
-            if (distance < minDistance) {
-                minDistance = distance;
-                closestModifier = allExistingModifiers[k];
-            }
-        }
-
-        const normalizedDistance = minDistance / closestModifier.modifier.length;
-
-        // Threshold
-        const maxAllowedNormalizedDistance = 0.5;
-
-        if (closestModifier 
-            && (minDistance < 50 || normalizedDistance <= maxAllowedNormalizedDistance)) {
-            
-            const portraitPreview = newModifier.previews.find(p => p.name === "portrait");
-            const matchingPortraitPreview = closestModifier.previews.find(p => p.name === "portrait");
-            if (portraitPreview && matchingPortraitPreview) {
-                portraitPreview.image = matchingPortraitPreview.image;
-            }
-        }
-    }
-
-    // update entries. add and remove categories/modifiers as needed.
-    function updateEntries(newEntries, existingEntries) {
-        let updated = false;
-        // Make a copy to store all the existing modifiers even if some get removed
-        let allExistingModifiers = existingEntries.map(entry => entry.modifiers).flat();
-
-        // loop through each category in existingEntries
-        for (let i = 0; i < existingEntries.length; i++) {
-            let existingCategory = existingEntries[i];
-            let newCategory = newEntries.find(entry => entry.category.toLowerCase() === existingCategory.category.toLowerCase());
-        
-            if (newCategory) {
-                // if category exists in newEntries, update its modifiers
-                let newModifiers = newCategory.modifiers;
-                let existingModifiers = existingCategory.modifiers;
-        
-                // loop through each modifier in existingModifiers
-                for (let j = 0; j < existingModifiers.length; j++) {
-                    let existingModifier = existingModifiers[j];
-                    const newModifier = newModifiers.find(mod => mod.modifier.toLowerCase().trim() === existingModifier.modifier.toLowerCase().trim());
-        
-                    if (newModifier) {
-                        if (existingModifier.LoRA || newModifier.LoRA) {
-                            // if modifier exists in newModifiers, completely replace existingModifier with newModifier
-                            // Check if LoRA arrays exist and if they are different
-                            if (existingModifier.LoRA && newModifier.LoRA) {
-                                // Overwrite LoRA in existingModifiers
-                                existingModifier.LoRA = newModifier.LoRA;
-                                updated = true;
-                            } else if (existingModifier.LoRA && !newModifier.LoRA) {
-                                // Remove LoRA from existingModifier if it doesn't exist in newModifier
-                                delete existingModifier.LoRA;
-                                updated = true;
-                            } else if (!existingModifier.LoRA && newModifier.LoRA) {
-                                // Add LoRA to existingModifier if it exists in newModifier
-                                existingModifier.LoRA = newModifier.LoRA;
-                                updated = true;
-                            }
-                            //console.log(existingModifier.LoRA, newModifier.LoRA)
-                        }
-                    } else {
-                        // if modifier doesn't exist in newModifiers, remove it from existingModifiers
-                        existingModifiers.splice(j, 1);
-                        j--;
-                        updated = true;
-                    }
-                }
-        
-                // loop through each modifier in newModifiers
-                for (let j = 0; j < newModifiers.length; j++) {
-                    let newModifier = newModifiers[j];
-                    let existingIndex = existingModifiers.findIndex(mod => mod.modifier.toLowerCase().trim() === newModifier.modifier.toLowerCase().trim());
-
-                    if (existingIndex === -1) {
-                        // Modifier doesn't exist in existingModifiers, so insert it at the same index in existingModifiers
-                        existingModifiers.splice(j, 0, newModifier);
-                        updated = true;
-
-                        updatePortraitBasedOnDistance(newModifier, allExistingModifiers);
-                    }
-                }
-            } else {
-                // if category doesn't exist in newEntries, remove it from existingEntries
-                existingEntries.splice(i, 1);
-                i--;
-                updated = true;
-            }
-        }
-        
-        // loop through each category in newEntries
-        for (let i = 0; i < newEntries.length; i++) {
-            let newCategory = newEntries[i];
-            let existingCategoryIndex = existingEntries.findIndex(entry => entry.category.toLowerCase() === newCategory.category.toLowerCase());
-
-            if (existingCategoryIndex === -1) {
-                // if category doesn't exist in existingEntries, insert it at the same position
-                existingEntries.splice(i, 0, newCategory)
-                updated = true;
-
-                // Loop through modifiers of this newly added category to update its portrait image
-                for (let j = 0; j < newCategory.modifiers.length; j++) {
-                    updatePortraitBasedOnDistance(newCategory.modifiers[j], allExistingModifiers);
-                }
-            }
-        }
-
-        return updated;
-    }
-
     async function handleImage(img, imageElement) {
         try {
             const resizedBase64Img = await resizeImage(img, 128, 128);
@@ -905,10 +674,6 @@ async function loadCustomModifiers() {
             // Set the source of the Image object to the input base64 image data
             img.src = srcImage;
         });
-    }
-
-    async function saveCustomCategories() {
-        setStorageData(CUSTOM_MODIFIERS_KEY, JSON.stringify(sharedCustomModifiers))                
     }
 
     /* CLEAR ALL AND ADD BUTTONS */
@@ -1042,6 +807,34 @@ function autoCollapseCategories() {
 //document.dispatchEvent(new Event('loadImageModifiers')) // refresh image modifiers
 //loadCustomImageModifierCards()
 
+function updatePortraitBasedOnDistance(newModifier, allExistingModifiers) {
+    let closestModifier = null;
+    let minDistance = Infinity;
+
+    for (let k = 0; k < allExistingModifiers.length; k++) {
+        let distance = levenshteinDistance(newModifier.modifier, allExistingModifiers[k].modifier);
+        if (distance < minDistance) {
+            minDistance = distance;
+            closestModifier = allExistingModifiers[k];
+        }
+    }
+
+    const normalizedDistance = minDistance / closestModifier.modifier.length;
+
+    // Threshold
+    const maxAllowedNormalizedDistance = 0.5;
+
+    if (closestModifier 
+        && (minDistance < 500 || normalizedDistance <= maxAllowedNormalizedDistance)) {
+        
+        const portraitPreview = newModifier.previews.find(p => p.name === "portrait");
+        const matchingPortraitPreview = closestModifier.previews.find(p => p.name === "portrait");
+        if (portraitPreview && matchingPortraitPreview) {
+            portraitPreview.image = matchingPortraitPreview.image;
+        }
+    }
+}
+
 function getLoRAFromActiveTags(activeTags, imageModifiers) {
     // Prepare a result array
     let result = [];
@@ -1143,8 +936,51 @@ function isStringInArray(array, searchString) {
     });
 }
 
+// extract LoRA tags from strings
+function extractLoraTags(imageTag) {
+    // Define the regular expression for the tags
+    const regex = /<lora:([^:>]+)(?::([^:>]*))?(?::([^:>]*))?>/gi;
+
+    // Initialize an array to hold the matches
+    let matches = [];
+
+    // Iterate over the string, finding matches
+    for (const match of imageTag.matchAll(regex)) {
+        // Initialize an object to hold a match
+        let loraTag = {
+            loraname: match[1],
+        };
+
+        // If weight is provided, add it to the loraTag object
+        if (match[2] !== undefined && match[2] !== '') {
+            loraTag.weight = parseFloat(match[2]);
+        }
+
+        // If blockweights are provided, add them to the loraTag object
+        if (match[3] !== undefined && match[3] !== '') {
+            loraTag.blockweights = match[3];
+        }
+
+        // Add the loraTag object to the array of matches
+        matches.push(loraTag);
+    }
+
+    // Clean up the imageTag string
+    let cleanedImageTag = imageTag.replace(regex, '').trim();
+
+    // Return the array of matches and cleaned imageTag string
+    return {
+        LoRA: matches,
+        imageTag: cleanedImageTag
+    };
+}
+    
 let previousLoRAs = [];
 let previousLoRAWeights = [];
+
+async function saveCustomCategories() {
+    setStorageData(CUSTOM_MODIFIERS_KEY, JSON.stringify(sharedCustomModifiers))                
+}
 
 function handleRefreshImageModifiers() {
     const loraModelData = loraModelField.value;
@@ -1194,6 +1030,170 @@ function handleRefreshImageModifiers() {
 }
 
 showLoRAs()
+
+// update entries. add and remove categories/modifiers as needed.
+function updateEntries(newEntries, existingEntries) {
+    let updated = false;
+    // Make a copy to store all the existing modifiers even if some get removed
+    let allExistingModifiers = existingEntries.map(entry => entry.modifiers).flat();
+
+    // loop through each category in existingEntries
+    for (let i = 0; i < existingEntries.length; i++) {
+        let existingCategory = existingEntries[i];
+        let newCategory = newEntries.find(entry => entry.category.toLowerCase() === existingCategory.category.toLowerCase());
+    
+        if (newCategory) {
+            // if category exists in newEntries, update its modifiers
+            let newModifiers = newCategory.modifiers;
+            let existingModifiers = existingCategory.modifiers;
+    
+            // loop through each modifier in existingModifiers
+            for (let j = 0; j < existingModifiers.length; j++) {
+                let existingModifier = existingModifiers[j];
+                const newModifier = newModifiers.find(mod => mod.modifier.toLowerCase().trim() === existingModifier.modifier.toLowerCase().trim());
+    
+                if (newModifier) {
+                    if (existingModifier.LoRA || newModifier.LoRA) {
+                        // if modifier exists in newModifiers, completely replace existingModifier with newModifier
+                        // Check if LoRA arrays exist and if they are different
+                        if (existingModifier.LoRA && newModifier.LoRA) {
+                            // Overwrite LoRA in existingModifiers
+                            existingModifier.LoRA = newModifier.LoRA;
+                            updated = true;
+                        } else if (existingModifier.LoRA && !newModifier.LoRA) {
+                            // Remove LoRA from existingModifier if it doesn't exist in newModifier
+                            delete existingModifier.LoRA;
+                            updated = true;
+                        } else if (!existingModifier.LoRA && newModifier.LoRA) {
+                            // Add LoRA to existingModifier if it exists in newModifier
+                            existingModifier.LoRA = newModifier.LoRA;
+                            updated = true;
+                        }
+                        //console.log(existingModifier.LoRA, newModifier.LoRA)
+                    }
+                } else {
+                    // if modifier doesn't exist in newModifiers, remove it from existingModifiers
+                    existingModifiers.splice(j, 1);
+                    j--;
+                    updated = true;
+                }
+            }
+    
+            // loop through each modifier in newModifiers
+            for (let j = 0; j < newModifiers.length; j++) {
+                let newModifier = newModifiers[j];
+                let existingIndex = existingModifiers.findIndex(mod => mod.modifier.toLowerCase().trim() === newModifier.modifier.toLowerCase().trim());
+
+                if (existingIndex === -1) {
+                    // Modifier doesn't exist in existingModifiers, so insert it at the same index in existingModifiers
+                    existingModifiers.splice(j, 0, newModifier);
+                    updated = true;
+
+                    updatePortraitBasedOnDistance(newModifier, allExistingModifiers);
+                }
+            }
+        } else {
+            // if category doesn't exist in newEntries, remove it from existingEntries
+            existingEntries.splice(i, 1);
+            i--;
+            updated = true;
+        }
+    }
+    
+    // loop through each category in newEntries
+    for (let i = 0; i < newEntries.length; i++) {
+        let newCategory = newEntries[i];
+        let existingCategoryIndex = existingEntries.findIndex(entry => entry.category.toLowerCase() === newCategory.category.toLowerCase());
+
+        if (existingCategoryIndex === -1) {
+            // if category doesn't exist in existingEntries, insert it at the same position
+            existingEntries.splice(i, 0, newCategory)
+            updated = true;
+
+            // Loop through modifiers of this newly added category to update its portrait image
+            for (let j = 0; j < newCategory.modifiers.length; j++) {
+                updatePortraitBasedOnDistance(newCategory.modifiers[j], allExistingModifiers);
+            }
+        }
+    }
+
+    return updated;
+}
+
+// transform custom modifiers from flat format to structured object
+function importCustomModifiers(input) {
+    let res = [];
+    let lines = input.split("\n");
+    let currentCategory = "Custom Modifiers";
+    let currentModifiers = [];
+    for (let line of lines) {
+        if (line.startsWith("#")) {
+            if (currentModifiers.length > 0) {
+                res.push({ category: currentCategory, modifiers: currentModifiers });
+            }
+            currentCategory = line.substring(1);
+            currentModifiers = [];
+        } else {
+            const dropAnImageHere = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAM4AAADOCAIAAAD5faqTAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAAEnQAABJ0Ad5mH3gAAApMSURBVHhe7dw7kty4EoXhWUAvQ4vrRWgJdwW9gfbljy1XrkyZ48mUd+8JZtYJNF58FMXLUfyfoSDBJAgCSYDVUaW/Pn369Bfwm5FmAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAANDx+fPn/zTy2Jpnzg2K//vhy5cvqjAPDLRXXD2l9Pr6Gmflfs9qjA5li7e1eV5biIt2q2pvWfLYv4hu478DP3/+/Pbt26QfJ+f++PHj7e0t43rUs6o8oz/SdTWEGffR5Irfv3/fMgDv7+8Rr6tnUUMNUMCvX79y/+FYm9WqiJk3Tz0WYbn/8Ewn34s7YuLr168Z/dHquaPh1HhrIDNoGSf1mvs6/PPPPxldWL2ias7QscgkUepkUcG5WKXO820+lmqHO/l2fCdVz6q8fILnnVieq/HTrkelfezKvlMSV+Ndjqh6P0sfulfUc6/dKBfF5IEBJ1N3kLpT2iltnjdsNdV2dfIdde/ENIpKsgho57bJuR7OtuvdQYrJooYnnipmckW9M8UhraRZNNbNJ3Gzq/pPabM2sqhnV6oFt7bt5Dua3EnQA+SOVuZl6WJ+bhyS3F84IUaLcnDN1Ww6v6IHO/fHRinVTcGz2qyNLOo5kGoShyT372x+J0GHIqZacQ70gufIag1qdSPnVxyNVlebVaP8O6vN2siiHlItRYyGJ/cXW3qhesSjcMuErykkgsv1aH7FXanWJlYkSruqRtjzbdZGFvU8k2pVJ9/U/E7Mz2vuLybn+iOFVp8sKuLnK1HozjHz1sZC3+bKSDmxjWo+sc3ayKKeA6nW7eT7mtxJSe/aEVb2l8/VPWs7qLvda9XT5pee+bWCqmqDu4VBJXGo+7myy5mhjRi2Nk1PbLM2sqhnNdU2dvJ9qd3R4nlXeiAVn0XFuS2NWVuhK5lfK3Qb1i3Ui5Fr1nVX36hKMbHFv9I2zDW3h1rzNmsji3pWU63V7eT76vZOy28hZX9NeqE7tZw4bF3q+uoz8ipPbNJOaXJim7WRRT0HUm37/H0L3d5puSPmnwc10l5q2444cTGqKEt0uV3zmU2mNLnPAuo65518X93eae36WOCOqP6K7fgtr9geY21kUVGDuljbYe9MVlHjo05VlUUFFcbR59vcrd+2p1oYdfJ9je6kpNkiYtQdWbQYnev46o11VN6lZIrgMpO2tHaveaqd2GYt1lnUE6nWXmVvJ9/XlsHzYJQPq0zO7Xa6eLVST2XRgNZEhSk+9xdbWruX706VZ9FHZ7V5Pi9GTPUwy4FOvqnVwdNtRA+2b82TczWrxyF1RxYt/PFi3u8e/qrm1dYe4Gup8iz66Mk2SzcFS/50Uj3McqCTb2o+eDoa3STt/D8/15NB7i80MUwqDO73Xcl9mKqKOlV5Fn30ZJvF088oJ6Kvuuce6OSb8p2oF7RtujG9BMQh6T7QCouj3V7wEFZPqkdF9G5bvtVq22+7ovrzwMP8ise4ne3l7Jk2S5msWiJ9uspVsw+1U5oc6+Q78p2M6Lkpe7Y07wX1YxxtF45y5LrU+92Lzq94zJZUk8NtDn4PGRmtzoc7+XbKB66kh0/znPo343rcC6MwP+66ShY9qET1t5dWl03SaPWKBzjVVl+uj7W51D1dvTTJ8mc6GR9ogNWb4d/SWU+2uTw9iwAAAAAAAAAAAAAAAAAAwHGjL+X5K3u5v02cIrk/FmGrX3Ztvb6+vr29/f2g7ckXEssvHrY2fpMxgnNnYBSztwHd+Dw2cMo9/nZqSnw/uPrhg1of5WHyNflS+QuOb9OfiOloxu35avL7+3v5a5qSytvvQFd30Wp/aNkadVFJGR8xCs6ixd4GTOLLH7yUTrnHK7gf1VlZtHB52PKb6eqU+R2W36mvLj2iCvOEhZqkkirzql9/VE1q6dnI0LFRF5VGqba3Aavx7QN8yj1eYdSPLvcA6+nJYwMxUXnsJ6mm6Sdifi6/W9zy8x5Xq+B29tLjHu2sLjq6u122VLKaahsb0I3XrK9dP5zV3HbKPV5h1FCXOy3mC6JEmOMnqRbrrAL8S/F5Hntdnj+ganO1xp0yDFsq0aGIUXAWLfY2YBI/6thT7vEKo4a6XBsx0nqq8lhP9HXELOfNUi0C1Hd6XmN78p8S6CGOmC2LeOWUYdhSSdy+KDiLFnsbMI+PQ5L7i1Pu8QqjhrpcGx7sduWyWApj5ovgUapp4omA2I2VcZLHqifi1ZIs2uyUYdhSiQ5FTNXIvQ2Yx8chyf3FKfd4hVFDXa4N7caLwmhecS7GOhjbo1SL3PJS6MyrXkGCp70DU5qcMgxbKtGhiInusr0NmMfHoaorTrnHK4wa6nJtaHf+UhUTj7sgIrup5tTxBOmS7rugk/hYP54yDFsq0aGIie6yvQ2YxMenLvkd76NXGDXU5drQ7iQh2uyJ3W6qeUhyfxHzXFUYHN+d81b5LrS+qz2VyftAaV5JiPcHie6yvQ1wvPpZ20FhCo7ydnZXQBx65h6v4IbOU03Ubu22L1Ux4ZXly3n9VIshqT5IqjvilLZfnGpuhkV5parZd9HVbWFrXkmlaufeBkzi1cPVGIVT7vEKbuhqqo0SIl7jyo+QEdbepP+u3aZUlLen7E21qgbfhcpVVaWts8uVPDOrKSavWmgb4PhW9wVD9l7i/8YNVbOyaOHysq3thwPnn5bRLBrnTbxttPOixN9TpKxH1KoobxdQJa7aZrEKVxdVeZxe3d0uWypxOxWcRYu9DWjjdZvunG62nXKPVxg11OXayKLizdQfDuJprgY4YtpUi0zVKbpWRcFxVvXO61Se/OEtRA1/XqoFZ1v7yJ1yj1cYNdTl2siiYgWMx8sx1YIYhdWo+7PkXPXa688cStAsGvizU839MPlY8Mw9XmHUUJdrI4sWsU7FIjhaEJfz6lH3c6nyLr/ueMoMcUVp3/BKqkEx+jf3F6cMw5ZKdChiqu7a24BJfLukhFPu8QqjhrpcG1m08Irmzm3vMMqrUY/C6hNiabRWurz7kmd/fKp5Waje2E65xyuMGupybWTRQ5Rb9SIvUV6OutNlPjP5ZS73HyKNRDNc9UzbH59q4ok/9xen3OMVRg11uTay6MEzuXRnqThUjnrkwXxaEtfcvvx6GRWFKSBSXP9q2yeOUk0B2m6NEreksKhkMpY6FDEKzqKFz93YAJVEfPdavkr54cmnPHOPV1BToqHbU82HpM0JiUMedb/Sqi+iZGS0RgS/7U1Ui2/Z1K7V7JdRF5VWU22kasD8Wu7JcuI/5R6v4IZWS5vLtZFFhZjJ25UuxDroCc+rZ7eqSpw76h3V0E04tSSe6Yx70NhEhSOjWyi5Kyarv780ULVhbwNWr+XbV81Rcso9YkiLgkYlZBEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHMvLy+5Bfw2Ly8v/wNatp01zLgrNAAAAABJRU5ErkJggg=="
+            
+            let { LoRA, imageTag } = extractLoraTags(line);
+            if (LoRA.length > 0) {
+                currentModifiers.push({
+                    modifier: imageTag,
+                    LoRA: LoRA,
+                    previews: [
+                        { name: "portrait", image: dropAnImageHere },
+                        { name: "landscape", image: "" }
+                    ]
+                });
+            } else {
+                currentModifiers.push({
+                    modifier: line,
+                    previews: [
+                        { name: "portrait", image: dropAnImageHere },
+                        { name: "landscape", image: "" }
+                    ]
+                });
+            }
+        }
+    }
+    res.push({ category: currentCategory, modifiers: currentModifiers });
+    return res;
+}
+
+// transform custom modifiers from structured object to flat format
+function exportCustomModifiers(json) {
+    let result = '';
+
+    json.forEach(item => {
+        result += '#' + item.category + '\n';
+        item.modifiers.forEach(modifier => {
+            let modifierString = modifier.modifier;
+            // Check if modifier has a LoRA array and it is not empty
+            if (modifier.LoRA && modifier.LoRA.length > 0) {
+                modifier.LoRA.forEach(lora => {
+                    let loraname = lora.loraname || lora.filename; // ensure backward compatibility
+                    let weight = lora.weight || lora.multiplier; // ensure backward compatibility
+
+                    modifierString += ' <lora:' + loraname;
+                    // Check if loraTag has a weight/multiplier
+                    if (weight) {
+                        modifierString += ':' + weight;
+                        // Check if loraTag has blockweights (only if there's a weight/multiplier)
+                        if (lora.blockweights) {
+                            modifierString += ':' + lora.blockweights;
+                        }
+                    }
+                    modifierString += '>';
+                });
+            }
+            result += modifierString + '\n';
+        });
+        result += '\n'; // Add a new line after each category
+    });
+
+    return result;
+}
 
 // add the export and import links to the custom modifiers dialog
 function initCustomModifiersDialog() {
