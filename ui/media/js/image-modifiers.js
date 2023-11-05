@@ -446,9 +446,12 @@ modifierSettingsOverlay.addEventListener("keydown", function(e) {
             e.stopPropagation()
             break
         case "Enter":
+        case "s":
+        case "S":
             if (e.ctrlKey) {
                 // Ctrl+Enter to confirm
                 modifierSettingsOverlay.classList.remove("active")
+                e.preventDefault();
                 e.stopPropagation()
                 break
             }
