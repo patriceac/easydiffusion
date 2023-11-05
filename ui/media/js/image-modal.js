@@ -207,6 +207,7 @@ const imageModal = (function() {
             close()
         }
     });
+    
     window.addEventListener("keydown", (e) => {
         if (modalElem.classList.contains("active")) {
             switch (e.key) {

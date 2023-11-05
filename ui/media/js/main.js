@@ -1246,6 +1246,7 @@ function createTask(task) {
     if (task.previewPrompt.innerText.trim() === "") {
         task.previewPrompt.innerHTML = "&nbsp;" // allows the results to be collapsed
     }
+    checkFullScreen();
     return taskEntry.id
 }
 
@@ -2860,3 +2861,20 @@ document.addEventListener("on_all_tasks_complete", (e) => {
         playSound()
     }
 })
+
+
+// hide prompt preview and task config in full screen mode
+function checkFullScreen() {
+    const isFullScreen = (window.innerHeight == screen.height);
+
+    const elements = document.querySelectorAll('.taskConfigData, .preview-prompt');
+    elements.forEach(element => {
+        if (isFullScreen) {
+            element.classList.add('hide-in-fullscreen');
+        } else {
+            element.classList.remove('hide-in-fullscreen');
+        }
+    });
+}
+window.addEventListener('resize', checkFullScreen);
+checkFullScreen();

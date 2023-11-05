@@ -1832,3 +1832,7 @@ div#enlarge-buttons {
     padding-top: 6pt;
     color: var(--small-label-color);
 }
+
+.hide-in-fullscreen {
+    display: none;
+}
