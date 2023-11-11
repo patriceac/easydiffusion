@@ -1769,9 +1769,9 @@ function renameMakeImageButton() {
     makeImageBtn.innerText = `${action} ${imageLabel}`;
 }
 numOutputsTotalField.addEventListener("change", renameMakeImageButton)
-numOutputsTotalField.addEventListener("keyup", debounce(renameMakeImageButton, 300))
+numOutputsTotalField.addEventListener("keyup", debounce(renameMakeImageButton, 50))
 numOutputsParallelField.addEventListener("change", renameMakeImageButton)
-numOutputsParallelField.addEventListener("keyup", debounce(renameMakeImageButton, 300))
+numOutputsParallelField.addEventListener("keyup", debounce(renameMakeImageButton, 50))
 
 function onDimensionChange() {
     let widthValue = parseInt(widthField.value)
