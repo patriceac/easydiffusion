@@ -23,7 +23,7 @@ if exist "scripts\get_config.py" (
 )
 
 if "%update_branch%"=="" (
-    set update_branch=main
+    set update_branch=beta
 )
 
 @>nul findstr /m "conda_sd_ui_deps_installed" scripts\install_status.txt
@@ -57,7 +57,7 @@ if "%update_branch%"=="" (
     @echo. & echo "Downloading Easy Diffusion..." & echo.
     @echo "Using the %update_branch% channel" & echo.
 
-    @call git clone -b "%update_branch%" https://github.com/easydiffusion/easydiffusion.git sd-ui-files && (
+    @call git clone -b "%update_branch%" https://github.com/patriceac/easydiffusion.git sd-ui-files && (
         @echo sd_ui_git_cloned >> scripts\install_status.txt
     ) || (
         @echo "Error downloading Easy Diffusion. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/easydiffusion/easydiffusion/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/easydiffusion/easydiffusion/issues" & echo "Thanks!"
