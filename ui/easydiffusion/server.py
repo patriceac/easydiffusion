@@ -28,6 +28,13 @@ from pydantic import BaseModel, Extra
 from starlette.responses import FileResponse, JSONResponse, StreamingResponse
 from pycloudflared import try_cloudflare
 
+import ctypes
+
+# Constants for preventing sleep
+ES_CONTINUOUS = 0x80000000
+ES_SYSTEM_REQUIRED = 0x00000001
+ES_DISPLAY_REQUIRED = 0x00000002
+
 log.info(f"started in {app.SD_DIR}")
 log.info(f"started at {datetime.datetime.now():%x %X}")
 
@@ -40,6 +47,12 @@ NOCACHE_HEADERS = {
 }
 PROTECTED_CONFIG_KEYS = ("block_nsfw",)  # can't change these via the HTTP API
 
+def prevent_sleep():
+    ctypes.windll.kernel32.SetThreadExecutionState(
+        ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED)
+
+def allow_sleep():
+    ctypes.windll.kernel32.SetThreadExecutionState(ES_CONTINUOUS)
 
 class NoCacheStaticFiles(StaticFiles):
     def __init__(self, directory: str):
@@ -225,7 +238,6 @@ def read_web_data_internal(key: str = None, **kwargs):
             "hosts": app.getIPConfig(),
             "default_output_dir": output_dir,
             "enforce_output_dir": ("force_save_path" in config),
-            "enforce_output_metadata": ("force_save_metadata" in config),
         }
         system_info["devices"]["config"] = config.get("render_devices", "auto")
         return JSONResponse(system_info, headers=NOCACHE_HEADERS)
@@ -268,6 +280,7 @@ def ping_internal(session_id: str = None):
 
 def render_internal(req: dict):
     try:
+        prevent_sleep()  # Prevent sleep at the start of the function
         req = convert_legacy_render_req_to_new(req)
 
         # separate out the request data into rendering and task-specific data
@@ -299,7 +312,8 @@ def render_internal(req: dict):
     except Exception as e:
         log.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))
-
+    finally:
+        allow_sleep()  # Allow sleep at the end of the function
 
 def filter_internal(req: dict):
     try:
@@ -471,6 +485,7 @@ def modify_package_internal(package_name: str, req: dict):
 
 
 def get_sha256_internal(obj_path):
+    import hashlib
     from easydiffusion.utils import sha256sum
 
     path = obj_path.split("/")
